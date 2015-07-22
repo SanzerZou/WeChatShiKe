@@ -1,19 +1,19 @@
 <%@ page language="java" import="java.util.*" contentType="text/html; charset=UTF-8"%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-  <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<link rel="stylesheet" type="text/css" href="Source-code/myCss.css" media="all">
-	<script type="text/javascript" src="Source-code/jquery.js"></script>
-	<title>食客来了</title>	
-	<!-- <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"> -->
-	<meta content="width=device-width" name="viewport">
-	<meta name="Keywords" content="">
-	<meta name="Description" content="">
-	<!-- Mobile Devices Support @begin -->
-	<meta content="telephone=no, address=no" name="format-detection">
-	<meta name="apple-mobile-web-app-capable" content="yes"> <!-- apple devices fullscreen -->
-	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" type="text/css" href="css/myCss.css" media="all">
+<script type="text/javascript" src="js/jquery.js"></script>
+<title>食客来了</title>	
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+<meta content="width=device-width" name="viewport">
+<meta name="Keywords" content="">
+<meta name="Description" content="">
+<!-- Mobile Devices Support @begin -->
+<meta content="telephone=no, address=no" name="format-detection">
+<meta name="apple-mobile-web-app-capable" content="yes"> <!-- apple devices fullscreen -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 	<!-- Mobile Devices Support @end -->
 <style type="text/css">
 .item{
@@ -50,6 +50,7 @@ $(document).ready(function(){
 	    		for(var i = 0, length= o.branches.length; i < length; i++){
 	    			var dist = Math.round(Math.random()*1000);
 	    			var br = o.branches[i];
+	    			// onclick事件绑定； 设置brand Uid和uid这两个参数用于查找商家
 	    			var s = ' <li class="item" onclick="showMenu(this)" uid="'+br.uid+'" buid="'+br.brandUid+'"> <div class="store_ifo"> <h3 class="store_name">' + br.name +  
 	    			'</h3><p class="store_address"> ' + br.address + "&nbsp;" + br.tel +
 	    			'</p></div><div class="distance">'+dist+'米</div></li>';
@@ -68,8 +69,10 @@ $(document).ready(function(){
 
 function showMenu(li){
 	var o = $(li);
+	// 使用jQuery的attr来保存属性，属性是直接在标签内添加，这种方法要比data-方便
 	var uid = o.attr('uid');
 	var buid = o.attr('buid');
+	// 重定向，并且通过url传参
 	window.location.href = 'menu.jsp?openId='+g_openId+'&brandUid='+buid+'&branchUid='+uid;
 }
 

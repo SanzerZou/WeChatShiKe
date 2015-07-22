@@ -1,22 +1,22 @@
 <%@ page language="java" import="java.util.*" contentType="text/html; charset=UTF-8"%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-  <head>
+<head>
 
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<link rel="stylesheet" type="text/css" href="Source-code/common.css" media="all">
-	<link rel="stylesheet" type="text/css" href="Source-code/color.css" media="all">
-	<script type="text/javascript" src="Source-code/jquery.js"></script>
-	<script type="text/javascript" src="Source-code/dmain.js" charset="UTF-8"></script>
-	<title>食客来了</title>	
-	<!-- <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"> -->
-	<meta content="width=device-width" name="viewport">
-	<meta name="Keywords" content="">
-	<meta name="Description" content="">
-	<!-- Mobile Devices Support @begin -->
-	<meta content="telephone=no, address=no" name="format-detection">
-	<meta name="apple-mobile-web-app-capable" content="yes"> <!-- apple devices fullscreen -->
-	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" type="text/css" href="css/common.css" media="all">
+<link rel="stylesheet" type="text/css" href="css/color.css" media="all">
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/dmain.js" charset="UTF-8"></script>
+<title>食客来了</title>	
+<!-- <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"> -->
+<meta content="width=device-width" name="viewport">
+<meta name="Keywords" content="">
+<meta name="Description" content="">
+<!-- Mobile Devices Support @begin -->
+<meta content="telephone=no, address=no" name="format-detection">
+<meta name="apple-mobile-web-app-capable" content="yes"> <!-- apple devices fullscreen -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 	<!-- Mobile Devices Support @end -->
 <script type="text/javascript">
 var g_baseurl = '<%=request.getContextPath()%>';
