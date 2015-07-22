@@ -33,17 +33,16 @@ var islock=false;
 var openId = '<%=request.getParameter("openId")%>';
 var orderMap = <%=request.getParameter("orderMap")%>;
 
+
 var brandUidStr = '<%=request.getParameter("brandUidStr")%>';
 var branchUidStr = '<%=request.getParameter("branchUidStr")%>';
 var sum = 0.0;
 
 $(document).ready(function(){
-	var ta = 0;
-	var tc = 0;
 	for(var p in orderMap) {
 		var o = orderMap[p];
 		var prod = o.obj;
-		var s = '<li data-dishUid="'+o.dishUid+'" >'+
+		var s = '<li data-dishuid="'+o.dishUid+'" >'+
 					'<div class="licontent">'+
 						'<div class="span">'+
 							'<img src="'+prod.dishImageUrl+'" alt="" url="">'+
@@ -64,13 +63,22 @@ $(document).ready(function(){
 					'<input type="text" class="markinput" placeholder="备注(30个汉字以内)" name="dish[9][omark]" value="">'+
 				'</li>';
 		$("#menuList ul").append(s);
-		ta += parseFloat(prod.dishPrice);
-		tc += parseInt(o.count)
 	}
+	var ta = <%=request.getParameter("totalPrice")%>;
+	var tc = <%=request.getParameter("totalNum")%>;
 	var	_total = $('#allmoney')
 	, _cartNum = $('#menucount');
 	_total.text(ta);
 	_cartNum.text(tc);
+	/**
+	 * 为列表加号键添加绑定监听
+	 */
+	$('#menuList li').each(function(){
+		var _dishUid = $(this).data("dishuid");
+		var _prod = orderMap[_dishUid].obj;
+		var plus = $(this).find(".plus");
+		plus.amount(_prod, $.amountCb());
+	});			
 });
 
 function onEncodeSuccess(data, status) {
@@ -196,6 +204,10 @@ function discard(){
 	window.location.href = 'menu.jsp?openId='+openId+'&brandUid='+brandUidStr+'&branchUid='+branchUidStr;
 }
 
+function addmark(obj){
+	obj.parent().parent().siblings(".markinput").toggle();
+}
+
 $(function () {
     $.ajax({
         url: '<%=request.getContextPath()%>/pageService',
@@ -294,46 +306,6 @@ $(function () {
 					</div>
 				</div>			
 			</div>
-		</div>
-		
-		<script type="text/javascript">
-		$(function(){
-			var amountCb = $.amountCb();
-			$('#menuList li').each(function(){
-				var count = parseInt($(this).find('.number').val()),
-					_add = $(this).find('.plus'),
-					i = 0;
-		
-				for(; i < count; i++){
-					amountCb.call(_add, '+');
-				}
-		
-				_add.amount(count, amountCb);
-			});
-		
-		});
-		function addmark(obj){
-			obj.parent().parent().siblings(".markinput").toggle();
-		}
-		
-		
-		function getMyMenulist(){
-			var lis =$("#usermenu li");
-			var list = [];
-			for(i=0;i<lis.length;i++){		
-				var mark= $(".markinput",lis[i]).get(0).value;
-				var count = $(".num >input",lis[i]).get(0).value;
-				if(count>0){
-					var id = lis[i].id;			
-					var info = {'id':id,'count':count,'mark':mark}
-					list.push(info);
-				}
-				
-			}
-			var allmark = $("#allmark").get(0).value;
-			return {'data':list,mark:allmark};
-		}		
-		</script>		
-    
+		</div>    
   </body>
 </html>

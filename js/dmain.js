@@ -1,20 +1,13 @@
-
-
-$.fn.amount = function(num, callback){
+$.fn.amount = function(prod, callback){
 	// 边界条件的判断
 	var num = typeof num === 'undefined' ? 0 : num,
 		callback = callback || $.noop,
-		isShow = num > 0 ? '' : ' style="display:none;"',
 		activeClass = 'active';
 
 	function add(){
 		var obj = $(this).prev(),
 			_num = obj.find('input');
-		// 获得当前的值
-		var menu = $("#typeList .on"),
-			li = $(this).parents("li");
 		
-		var prod = g_data[menu.data("menu")]['dishes'][li.data("index")];
 		var dishUid = prod["dishUid"];
 		var _curNum = parseInt(prod["dishNum"]) + 1;
 		prod["dishNum"] = _curNum;
@@ -42,7 +35,6 @@ $.fn.amount = function(num, callback){
 		
 		var menu = $("#typeList .on"),
 		li = $(this).parents("li");
-		var prod = g_data[menu.data("menu")]['dishes'][li.data("index")];
 		var dishUid = prod["dishUid"];
 		var _curNum = parseInt(prod["dishNum"]);
 		if(_curNum > 0){
@@ -61,13 +53,8 @@ $.fn.amount = function(num, callback){
 	}
 	
 	return this.each(function(){
-		$(this).bind('click', add);
-		
+		$(this).bind('click', add);		
 		$(this).prevAll(".minus").bind('click', del);
-
-		if(num > 0){
-			$(this).addClass(activeClass);
-		}
 	});
 };
 $.amountCb = function(){

@@ -9,7 +9,7 @@
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/dmain.js" charset="UTF-8"></script>
 <title>食客来了</title>	
-<!-- <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"> -->
+<meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
 <meta content="width=device-width" name="viewport">
 <meta name="Keywords" content="">
 <meta name="Description" content="">
@@ -87,22 +87,6 @@ function initData(){
 	};	
 }
 
-function getMenuChecklist(){
-	var list = [];
-	$("#menuList li").each(function(){
-		var count =$(this).find('.number').val();
-		count=parseInt(count);
-		if(count>0){
-			var id = $(this).find('.thisdid').val();
-			var info = {'id':id,'count':count};
-			list.push(info);
-		}
-		
-	});
-	
-	return list;
-}
-
 $.showDishs = function(menu_num){
 	var dish_list = g_data[menu_num]['dishes'];
 	for(var i = 0, len = dish_list.length; i < len; i++){
@@ -134,7 +118,9 @@ $.showMenu = function(data){
 			$("#menuList ul").data("menu", menu);
 			// 为".plus"绑定监听事件
 			$('#menuList .plus').each(function(){
-				$(this).amount(0, $.amountCb());
+				var li = $(this).parents("li");
+				var prod=g_data[menu]['dishes'][li.data("index")];
+				$(this).amount(prod, $.amountCb());
 			});
 			
 			$("#typeList li").removeClass("on");  
@@ -154,7 +140,7 @@ function checkout(){
 	if((totalNum>0) && (totalPrice>0)){
 		// relocation "jsp"
 		var paramStr = JSON.stringify(orderMap);
-		window.location.href="Order_page.jsp?orderMap="+paramStr+'&openId='+g_openId+'&brandUidStr='+g_brandUidStr+'&branchUidStr='+g_branchUidStr;
+		window.location.href="Order_page.jsp?orderMap="+paramStr+'&openId='+g_openId+'&brandUidStr='+g_brandUidStr+'&branchUidStr='+g_branchUidStr+'&totalPrice='+totalPrice+'&totalNum='+totalNum;
 	}
 }
 </script>
