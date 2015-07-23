@@ -262,10 +262,11 @@ $(function () {
 				<div class="top">
 					<span>
 						<div>我的菜单</div>						
-						<!-- <a href="" class="add">加菜</a> -->
+						
 						<div>桌号：
 							<input type="number" id="deskId" style="width:50px; height:30px; font-size:150%"/>
 						</div>
+						<!-- <a href="#" class="add">加菜</a> -->
 						<a href="javascript:popup();" class="clear">清空</a>
 					</span>
 				</div>

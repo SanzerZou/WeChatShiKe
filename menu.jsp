@@ -8,6 +8,7 @@
 <link rel="stylesheet" type="text/css" href="css/color.css" media="all">
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/dmain.js" charset="UTF-8"></script>
+<script type="text/javascript" src="js/dialog.js" charset="UTF-8"></script>
 <title>食客来了</title>	
 <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
 <meta content="width=device-width" name="viewport">
@@ -103,6 +104,7 @@ $.showDishs = function(menu_num){
 		$("#menuList ul").append(s);
 	}
 	$("#menuList ul").append('<li>&nbsp;</li>');
+	$('#menuList .showPop').click(clickPop); // 为详情添加点击事件	 
 };
 
 $.showMenu = function(data){
@@ -110,24 +112,26 @@ $.showMenu = function(data){
 		var s = '<li data-menu="' + i +'">'+ data[i]['categoryName'] + '</li>';
 		$("#typeList").append(s);
 	};
-	// 为列表绑定监听事件
-	 $("#typeList li").click(function(){
-		 	var menu = $(this).data("menu");
-			$("#menuList li").hide();
-			$.showDishs($(this).data("menu"));
-			$("#menuList ul").data("menu", menu);
-			// 为".plus"绑定监听事件
-			$('#menuList .plus').each(function(){
-				var li = $(this).parents("li");
-				var prod=g_data[menu]['dishes'][li.data("index")];
-				$(this).amount(prod, $.amountCb());
-			});
-			
-			$("#typeList li").removeClass("on");  
-			$(this).addClass("on"); 
-	});
-	 $("#typeList li")[0].click();
-	 
+	/**
+	 * 为列表绑定监听事件
+	 * 默认点击第一项
+	 */
+ $("#typeList li").click(function(){
+	 	var menu = $(this).data("menu");
+		$("#menuList li").hide();
+		$.showDishs($(this).data("menu"));
+		$("#menuList ul").data("menu", menu);
+		// 为".plus"绑定监听事件
+		$('#menuList .plus').each(function(){
+			var li = $(this).parents("li");
+			var prod=g_data[menu]['dishes'][li.data("index")];
+			$(this).amount(prod, $.amountCb());
+		});
+		
+		$("#typeList li").removeClass("on");  
+		$(this).addClass("on"); 
+});
+ $("#typeList li")[0].click();
 };
 
 function checkout(){
@@ -143,6 +147,36 @@ function checkout(){
 		window.location.href="Order_page.jsp?orderMap="+paramStr+'&openId='+g_openId+'&brandUidStr='+g_brandUidStr+'&branchUidStr='+g_branchUidStr+'&totalPrice='+totalPrice+'&totalNum='+totalNum;
 	}
 }
+
+/**
+ * [clickPop description]
+ * @return {[type]}   [description]
+ */
+function clickPop(){
+	var li = $(this).parents("li");
+	var _wraper = $('#menuDetail');
+  var dialogTarget;
+	var F = function(str){return li.find(str);},
+		title = F('h3').text(),
+		imgUrl = F('img').attr('src'),
+		price = F('.unit_price').text(),
+		sales = F('.sales strong').attr('class'),
+		saleDesc = F('.salenum').html(),
+		info = F('.info').text(),
+		unit=F('.theunit').text(),
+		_detailImg = _wraper.find('img');
+
+	if(info){ $('#menuDetail .desc').show();}else{$('#menuDetail .desc').hide();}
+	_wraper.find('.price').text(price).end()
+		.find('.sales strong').attr('class', sales).end()
+		.find('.sale_desc').html(saleDesc).end()
+		.find('.info').text(info);
+
+	_detailImg.attr('src', imgUrl).show().next().hide();
+	_wraper.dialog({title: title, closeBtn: true});
+};
+
+
 </script>
 </head>
   
@@ -173,6 +207,21 @@ function checkout(){
 				</div>
 			</nav>
 		</footer>
+
+		<div class="menu_detail" id="menuDetail">
+			<img style="display: none;">
+			<div class="nopic"></div>
+<!-- 			<a href="javascript:void(0);" class="comm_btn" id="detailBtn">来一份</a> -->
+			<dl>
+				<dt>价格：</dt>
+				<dd class="highlight">￥<span class="price"></span></dd>
+			</dl>
+			<p class="sale_desc"></p>
+			<dl class="desc">
+				<dt>介绍：</dt>
+				<dd class="info"></dd>
+			</dl>
+		</div>
 		
 	</div>
   </body>
