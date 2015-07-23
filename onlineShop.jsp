@@ -4,12 +4,15 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rel="stylesheet" type="text/css" href="css/myCss.css" media="all">
-<script type="text/javascript" src="js/jquery.js"></script>
+<!-- jQuery Mobile CDN start -->
+<link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.css">
+<script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+<script src="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js"></script>
+<!-- jQuery Mobile end -->
+
 <title>食客来了</title>	
 <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
 <meta content="width=device-width" name="viewport">
-<meta name="Keywords" content="">
-<meta name="Description" content="">
 <!-- Mobile Devices Support @begin -->
 <meta content="telephone=no, address=no" name="format-detection">
 <meta name="apple-mobile-web-app-capable" content="yes"> <!-- apple devices fullscreen -->
@@ -47,16 +50,21 @@ $(document).ready(function(){
 	    	//{'resultCode':,'desc':,'branches':[{'brandUid':'',uid':'','name':'','address':'','tel':''}]}
 	    	var o = jQuery.parseJSON(d.data);
 	    	if(o.resultCode == 0){
+	    		var s = '';
 	    		for(var i = 0, length= o.branches.length; i < length; i++){
 	    			var dist = Math.round(Math.random()*1000);
 	    			var br = o.branches[i];
 	    			// onclick事件绑定； 设置brand Uid和uid这两个参数用于查找商家
-	    			var s = ' <li class="item" onclick="showMenu(this)" uid="'+br.uid+'" buid="'+br.brandUid+'"> <div class="store_ifo"> <h3 class="store_name">' + br.name +  
-	    			'</h3><p class="store_address"> ' + br.address + "&nbsp;" + br.tel +
-	    			'</p></div><div class="distance">'+dist+'米</div></li>';
-
-	    			$(".content ul").append(s);
+	    			s += 	'<li onclick="showMenu(this)" uid="'+br.uid+'" buid="'+br.brandUid+'">'+
+												'<a href="#">'+
+													'<h2>'+br.name+'</h2>'+
+													'<p>'+br.address+'</p>'+
+													'<p class="ui-li-count"><span>'+dist+'</span>米</p>'+
+												'</a>'+
+											'</li>';
 	    		}
+	    		$('#storeList').append(s);
+	    		$('#storeList').listview('refresh')
 	    	} else {
 	    		alert(o.desc);
 	    	}
@@ -80,14 +88,23 @@ function showMenu(li){
 </head>
   
 <body>
-	<header></header>
-	<div class="button">
-	    <button id="list" type="button">列表</button><button id="site" type="button">地图</button>
+<div data-role="page">
+	<div data-role="header"  data-theme="c">
+		<div data-role="navbar" data-iconpos="top">
+			<ul>
+				<li><a href="#" data-icon="home"  class="ui-btn-active">列表</a></li>
+				<li><a href="#" data-icon="info">地图</a></li>
+			</ul>
+		</div>
 	</div>
-	<div class="content">
-		<ul class="store_list">
-			
+<!-- ListView -->
+	<div data-role="content" data-theme="c">
+		<ul id="storeList" data-role="listview" data-inset="true">
+
 		</ul>
-	</div>
+	</div>	
+</div>
+
+
 </body>
 </html>

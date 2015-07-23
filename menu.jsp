@@ -217,10 +217,6 @@ function clickPop(){
 				<dd class="highlight">￥<span class="price"></span></dd>
 			</dl>
 			<p class="sale_desc"></p>
-			<dl class="desc">
-				<dt>介绍：</dt>
-				<dd class="info"></dd>
-			</dl>
 		</div>
 		
 	</div>

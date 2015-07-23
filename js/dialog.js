@@ -31,7 +31,7 @@ $.fn.dialog = function(opts){
 
 			_dialog.show();
 			initScroller();
-			return false;
+			// return false;
 		}
 
 		function close(){
