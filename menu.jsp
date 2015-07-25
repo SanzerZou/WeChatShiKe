@@ -184,6 +184,9 @@ function clickPop(){
     <div data-role="container" class="container menu">
 		<!-- 左边栏列表 -->
 		<div class="left">
+			<div class="top">
+				<div id="ILike"><a href="myOrder.jsp"><span class="icon hartblckgray"></span>我的</a></div>
+			</div>
 			<div class="content">
 			<ul id="typeList"><!--class="on"-->
 			<!-- 动态添加列表名 -->
