@@ -26,9 +26,21 @@ $(document).ready(function(){
 	showMyOrders();
 });
 
-function openPopUp(){
-	$("#mdialog").trigger('create').trigger('refresh').popup();
-	$("#mdialog").popup("open"   );
+function openPopUp(o){
+	var dlg = $("#mdialog");
+	dlg.attr('orderid', $(o).attr('orderid'));
+	dlg.trigger('create').trigger('refresh').popup();
+	dlg.popup("open");
+}
+/**
+ * 删除指定订单
+ */
+function onDeleteOrder(){
+	var oid = $("#mdialog").attr('orderid');
+	var orders = JSON.parse(window.localStorage.getItem("orders"));
+	delete orders[oid];
+	window.localStorage.setItem("orders", JSON.stringify(orders));
+	showMyOrders();
 }
 
 function showMyOrders(){
@@ -41,11 +53,16 @@ function showMyOrders(){
 	// 			price: totalPrice,
 	// 			name: name,
 	// 			time: time.toLocaleString(),
-	// 			parOrNot:false
+	// 			payOrNot:false
 	// 		}
 	// 	}
+	// 	初始化页面
+	var orderWapper = $('#orderlist');
+	orderWapper.html("");
+	// 获取本地数据
 	var orders = JSON.parse(window.localStorage.getItem("orders"));
 	var s = '';
+
 	var cnt = 0; // 订单的个数
 	for (var idex in orders) {
 		cnt++;
@@ -58,12 +75,12 @@ function showMyOrders(){
 				'<p>'+ tp.name+'</p>'+
 				'<p class="ui-li-aside">'+ tp.time+'</p>'+
 			'</a>'+
-			'<a href="javascript:openPopUp();" data-icon="'+pay+'"></a>'+
+			'<a orderid="'+idex+'" onclick="openPopUp(this);" data-icon="'+pay+'"></a>'+
 		'</li>';
 	};
 	s =  '<li data-role="list-divider">订单列表<span class="ui-li-count">'+ cnt +'</span></li>' + s;
-	$("#orderlist").append(s);
-	$("#orderlist").listview('refresh');
+	orderWapper.append(s);
+	orderWapper.listview('refresh');
 }
 
 </script>
@@ -78,12 +95,12 @@ function showMyOrders(){
 	</div>	
 </div>
 <div id="mdialog" data-role="popup" data-theme="a">		
-		<div data-role="header" data-theme="d">
+		<div data-role="header">
 			<h1>删除订单</h1>
 		</div>
-		<div data-role="content" data-theme="c">
+		<div data-role="content">
 			<p>是否要删除此订单？</p>
-			<a href="#" data-role="button" data-rel="back" data-theme="c">确定</a>       
+			<a href="#" data-role="button" data-rel="back" data-theme="c" onclick="onDeleteOrder()">确定</a>       
 			<a href="#" data-role="button" data-rel="back" data-theme="b">取消</a>  
 		</div>
 </div>
