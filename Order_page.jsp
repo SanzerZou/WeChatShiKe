@@ -32,8 +32,7 @@ var islock=false;
 
 var openId = '<%=request.getParameter("openId")%>';
 var orderMap = <%=request.getParameter("orderMap")%>;
-
-
+var transId = <%=request.getParameter("transId")%>;
 var brandUidStr = '<%=request.getParameter("brandUidStr")%>';
 var branchUidStr = '<%=request.getParameter("branchUidStr")%>';
 var sum = 0.0;
@@ -120,7 +119,7 @@ function onEncodeSuccess(data, status) {
 					brandUid: brandUidStr,
 					branchUid: branchUidStr,
 					deskID: desk,
-					transInfo: {'transID':guid(),'transTime':'2015-07-16 12:00:00','transAmount':sum,'transDetails':arr}
+					transInfo: {'transID':transId,'transTime':'2015-07-16 12:00:00','transAmount':sum,'transDetails':arr}
 				}),
 				success: function(d, s){
 					//{'resultCode':,'desc':'','menu':[{'categoryName':'','dishes':[{'dishUid':'','dishName':'','dishPrice':,'dishImageUrl':''}]}]}

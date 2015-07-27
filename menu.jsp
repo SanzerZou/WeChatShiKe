@@ -29,6 +29,10 @@ var discount=0;
 var totalPrice=totalNum=0;
 var g_data; // 存放变量
 var orderMap ={};
+/**
+ * 订单生成订单uid号
+ * @return {[type]} [description]
+ */
 function guid() {
 	function s4() {
 		return Math.floor((1 + Math.random()) * 0x10000)
@@ -141,10 +145,59 @@ function checkout(){
 	// get count number;
 	totalNum=$.trim($('#menucount').text());
 	totalNum=parseInt(totalNum);
+	// 生成订单函数，将并将订单保存在本地
+	// orders = {
+	// 	orderId:{
+	// 		content:{ orderMap
+	// 		}
+	// 		ifo:{
+	// 			orderId:,
+	// 			imgUrl:,
+	// 			price:,
+	// 			name:,
+	// 			time:,
+	// 			parOrNot:
+	// 		}
+	// 	}
+	// }
+	// orderMap[dishUid] = {'dishUid':dishUid,'count':_curNum, 'obj':prod};
+	// prod = {'dishUid':'','dishName':'','dishPrice':,'dishImageUrl':'', 'dishNum':};
+	function generateOrders(id){
+		var orders = window.localStorage.getItem("orders");
+		// 如果订单对象存在则直接恢复，如果不存在则创建新对象
+		if(orders)
+			orders = JSON.parse(orders);
+		else
+			orders ={};
+		var imgUrl = '';
+		var name = '';
+		var time = new Date();
+		for (var i in orderMap){
+			var tp = orderMap[i]['obj'];
+			name += tp['dishName'] + '*' + tp['dishNum'] + ' ';
+			imgUrl = tp['dishImageUrl'];
+		}
+		var orderItem = {
+			content : orderMap,
+			ifo : {
+				id : id,
+				imgUrl : imgUrl,
+				price: totalPrice,
+				name: name,
+				time: time.toLocaleString(),
+				parOrNot:false
+			}
+		}
+		orders[id] = orderItem;
+		window.localStorage.setItem("orders", JSON.stringify(orders));
+	}
 	if((totalNum>0) && (totalPrice>0)){
 		// relocation "jsp"
 		var paramStr = JSON.stringify(orderMap);
-		window.location.href="Order_page.jsp?orderMap="+paramStr+'&openId='+g_openId+'&brandUidStr='+g_brandUidStr+'&branchUidStr='+g_branchUidStr+'&totalPrice='+totalPrice+'&totalNum='+totalNum;
+		var transId = guid();
+		generateOrders(transId);
+		window.location.href="Order_page.jsp?orderMap="+paramStr+'&openId='+g_openId+'&brandUidStr='+g_brandUidStr+'&branchUidStr='+g_branchUidStr+'&totalPrice='+totalPrice+'&totalNum='+totalNum+'&transId='+guid();
+		// save OrderData
 	}
 }
 

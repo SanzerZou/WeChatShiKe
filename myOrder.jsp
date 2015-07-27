@@ -26,46 +26,42 @@ $(document).ready(function(){
 	showMyOrders();
 });
 
+function openPopUp(){
+	$("#mdialog").trigger('create').trigger('refresh').popup();
+	$("#mdialog").popup("open"   );
+}
+
 function showMyOrders(){
-	var data = [
-	{
-		orderId:"1",
-		imgUrl:"image/order.jpg",
-		price:62,
-		name:"卡布奇诺*5",
-		time:"2015-07-15 13:32",
-		payOrNot:true
-	},
-	{
-		orderId:"2",
-		imgUrl:"image/order2.jpg",
-		price:78,
-		name:"摩卡*2，美式咖啡*3",
-		time:"2015-07-15 13:32",
-		payOrNot:true
-	},
-	{
-		orderId:"3",
-		imgUrl:"image/order3.jpg",
-		price:25,
-		name:"卡布奇诺*3，美式咖啡*2",
-		time:"2015-07-11 16:32",
-		payOrNot:false
-	}
-	];
-	var s = '<li data-role="list-divider">订单列表<span class="ui-li-count">'+ data.length +'</span></li>'
-	for (var i = data.length - 1; i >= 0; i--) {
-		var pay = data[i].payOrNot === true ? "check" : "delete";
+	// orders 数据格式
+	// orderItem = {
+	// 		content : orderMap,
+	// 		ifo : {
+	// 			id : id,
+	// 			imgUrl : imgUrl,
+	// 			price: totalPrice,
+	// 			name: name,
+	// 			time: time.toLocaleString(),
+	// 			parOrNot:false
+	// 		}
+	// 	}
+	var orders = JSON.parse(window.localStorage.getItem("orders"));
+	var s = '';
+	var cnt = 0; // 订单的个数
+	for (var idex in orders) {
+		cnt++;
+		var tp = orders[idex].ifo;
+		var pay = tp.payOrNot === true ? "check" : "delete";
 		s += '<li>'+
 			'<a href="#">'+
-				'<img src="'+data[i].imgUrl+'">'+
-				'<h2>￥'+data[i].price+'</h3>'+
-				'<p>'+data[i].name+'</p>'+
-				'<p class="ui-li-aside">'+data[i].time+'</p>'+
+				'<img src="'+tp.imgUrl+'">'+
+				'<h2>￥'+tp.price+'</h3>'+
+				'<p>'+ tp.name+'</p>'+
+				'<p class="ui-li-aside">'+ tp.time+'</p>'+
 			'</a>'+
-			'<a href="#mdialog" data-rel="dialog" data-icon="'+pay+'"></a>'+
+			'<a href="javascript:openPopUp();" data-icon="'+pay+'"></a>'+
 		'</li>';
 	};
+	s =  '<li data-role="list-divider">订单列表<span class="ui-li-count">'+ cnt +'</span></li>' + s;
 	$("#orderlist").append(s);
 	$("#orderlist").listview('refresh');
 }
@@ -81,7 +77,7 @@ function showMyOrders(){
 		</ul>
 	</div>	
 </div>
-<div id="mdialog" data-role="dialog">		
+<div id="mdialog" data-role="popup" data-theme="a">		
 		<div data-role="header" data-theme="d">
 			<h1>删除订单</h1>
 		</div>
