@@ -29,8 +29,9 @@ $(document).ready(function(){
 function openPopUp(o){
 	var dlg = $("#mdialog");
 	dlg.attr('orderid', $(o).attr('orderid'));
-	dlg.trigger('create').trigger('refresh').popup();
-	dlg.popup("open");
+	// dlg.trigger('create').trigger('refresh').popup();
+	// dlg.popup("open");
+	// dlg.trigger('create').trigger('refresh').popup().popup("open");
 }
 /**
  * 删除指定订单
@@ -75,7 +76,7 @@ function showMyOrders(){
 				'<p>'+ tp.name+'</p>'+
 				'<p class="ui-li-aside">'+ tp.time+'</p>'+
 			'</a>'+
-			'<a orderid="'+idex+'" onclick="openPopUp(this);" data-icon="'+pay+'"></a>'+
+			'<a orderid="'+idex+'" href = "#mdialog" data-rel="popup" onclick="openPopUp(this)" data-icon="'+pay+'"></a>'+
 		'</li>';
 	};
 	s =  '<li data-role="list-divider">订单列表<span class="ui-li-count">'+ cnt +'</span></li>' + s;
@@ -92,17 +93,17 @@ function showMyOrders(){
 	<div data-role="content" data-theme="c">
 		<ul id="orderlist" data-role="listview">
 		</ul>
-	</div>	
-</div>
-<div id="mdialog" data-role="popup" data-theme="a">		
-		<div data-role="header">
-			<h1>删除订单</h1>
-		</div>
-		<div data-role="content">
-			<p>是否要删除此订单？</p>
-			<a href="#" data-role="button" data-rel="back" data-theme="c" onclick="onDeleteOrder()">确定</a>       
-			<a href="#" data-role="button" data-rel="back" data-theme="b">取消</a>  
-		</div>
+	</div>
+	<div  data-role="popup" data-theme="a" id="mdialog">		
+			<div data-role="header">
+				<h1>删除订单</h1>
+			</div>
+			<div data-role="content">
+				<p>是否要删除此订单？</p>
+				<a href="#" data-role="button" data-rel="back" data-theme="c" onclick="onDeleteOrder()">确定</a>       
+				<a href="#" data-role="button" data-rel="back" data-theme="b">取消</a>  
+			</div>
+	</div>
 </div>
 </body>
 </html>

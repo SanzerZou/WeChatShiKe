@@ -192,6 +192,10 @@ function checkout(){
 		window.localStorage.setItem("orders", JSON.stringify(orders));
 	}
 	if((totalNum>0) && (totalPrice>0)){
+		$('#nextstep').removeClass('orange show')
+									.addClass('gray disabled')
+									.attr('href','javascript:;');
+
 		// relocation "jsp"
 		var paramStr = JSON.stringify(orderMap);
 		var transId = guid();
@@ -238,7 +242,12 @@ function clickPop(){
 		<!-- 左边栏列表 -->
 		<div class="left">
 			<div class="top">
-				<div id="ILike"><a href="myOrder.jsp"><span class="icon hartblckgray"></span>我的</a></div>
+				<div id="ILike">
+					<a href="myOrder.jsp">
+						<span class="icon hartblckgray"></span>我的
+					</a>
+				</div>
+<!-- 				<a href="userInfo.jsp" style="font-size:1.5em">test</a> -->
 			</div>
 			<div class="content">
 			<ul id="typeList"><!--class="on"-->
