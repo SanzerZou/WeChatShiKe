@@ -22,6 +22,10 @@
 </style>
 
 <script type="text/javascript">
+var g_openId = '<%=request.getParameter("openId")%>';
+var g_brandUidStr = '<%=request.getParameter("brandUidStr")%>';
+var g_branchUidStr = '<%=request.getParameter("branchUidStr")%>';
+
 $(document).ready(function(){
 	showMyOrders();
 });
@@ -43,18 +47,29 @@ function onDeleteOrder(){
 	window.localStorage.setItem("orders", JSON.stringify(orders));
 	showMyOrders();
 }
+/**
+ *	跳转订单详情页面 
+ */
+function orderDetail(o){
+	var orderId = $(o).attr("orderid");
+	var orders = JSON.parse(window.localStorage.getItem("orders"));
+	var order = orders[orderId];
+	var info = order.info;
+	window.location.href="Order_page.jsp?orderMap=" + JSON.stringify(order.content)+'&openId='+g_openId+'&brandUidStr='+g_brandUidStr+'&branchUidStr='+g_branchUidStr + '&totalPrice='+info.price+'&totalNum=' + info.num + '&transId=' + info.id;
+}
 
 function showMyOrders(){
 	// orders 数据格式
 	// orderItem = {
 	// 		content : orderMap,
-	// 		ifo : {
+	// 		info : {
 	// 			id : id,
 	// 			imgUrl : imgUrl,
 	// 			price: totalPrice,
+	// 		  num: totalNum,
 	// 			name: name,
 	// 			time: time.toLocaleString(),
-	// 			payOrNot:false
+	// 			isPay:false
 	// 		}
 	// 	}
 	// 	初始化页面
@@ -66,18 +81,20 @@ function showMyOrders(){
 
 	var cnt = 0; // 订单的个数
 	for (var idex in orders) {
-		cnt++;
-		var tp = orders[idex].ifo;
-		var pay = tp.payOrNot === true ? "check" : "delete";
-		s += '<li>'+
-			'<a href="#">'+
-				'<img src="'+tp.imgUrl+'">'+
-				'<h2>￥'+tp.price+'</h3>'+
-				'<p>'+ tp.name+'</p>'+
-				'<p class="ui-li-aside">'+ tp.time+'</p>'+
-			'</a>'+
-			'<a orderid="'+idex+'" href = "#mdialog" data-rel="popup" onclick="openPopUp(this)" data-icon="'+pay+'"></a>'+
-		'</li>';
+		var tp = orders[idex].info;
+		if(tp){
+			cnt++;
+			var pay = tp.isPay === true ? "check" : "delete";
+			s += '<li>'+
+				'<a href="#" orderid="'+idex+'" onclick="orderDetail(this)">'+
+					'<img src="'+tp.imgUrl+'">'+
+					'<h2>￥'+tp.price+'</h3>'+
+					'<p>'+ tp.name+'</p>'+
+					'<p class="ui-li-aside">'+ tp.time+'</p>'+
+				'</a>'+
+				'<a orderid="'+idex+'" href = "#mdialog" data-rel="popup" onclick="openPopUp(this)" data-icon="'+pay+'"></a>'+
+			'</li>';
+		}
 	};
 	s =  '<li data-role="list-divider">订单列表<span class="ui-li-count">'+ cnt +'</span></li>' + s;
 	orderWapper.append(s);

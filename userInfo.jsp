@@ -156,7 +156,8 @@ $(function (){
 
           if (data.birthday) {
               $('#userBirth').val(data.birthday);
-              $("#userBirth").prop('disabled', true);
+              // $("#userBirth").prop('disabled', true);
+              $('#userBirth').button("disable");
           }
           
           if (data.name) {

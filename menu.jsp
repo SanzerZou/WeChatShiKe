@@ -23,7 +23,7 @@
 var g_baseurl = '<%=request.getContextPath()%>';
 var g_openId = '<%=request.getParameter("openId")%>';
 var g_brandUidStr = '<%=request.getParameter("brandUid")%>';
-var g_branchUidStr = '<%=request.getParameter("branchUid")%>';;
+var g_branchUidStr = '<%=request.getParameter("branchUid")%>';
 
 var discount=0; 
 var totalPrice=totalNum=0;
@@ -42,11 +42,35 @@ function guid() {
 	return s4() + s4() + '-' + s4() + '-' + s4() + '-' + 
 		s4() + '-' + s4() + s4() + s4();
 }
+/**
+ * 日期格式化
+ */
+Date.prototype.Format = function(formatStr) {
+    var str = formatStr;
+    var Week = ['日', '一', '二', '三', '四', '五', '六'];
+    str = str.replace(/yyyy|YYYY/, this.getFullYear());
+    str = str.replace(/yy|YY/, (this.getYear() % 100) > 9 ? (this.getYear() % 100).toString() : '0' + (this.getYear() % 100));
+    str = str.replace(/MM/, (this.getMonth() + 1) > 9 ? (this.getMonth() + 1).toString() : '0' + (this.getMonth() + 1));
+    str = str.replace(/M/g, (this.getMonth() + 1));
+    str = str.replace(/w|W/g, Week[this.getDay()]);
+    str = str.replace(/dd|DD/, this.getDate() > 9 ? this.getDate().toString() : '0' + this.getDate());
+    str = str.replace(/d|D/g, this.getDate());
+    str = str.replace(/hh|HH/, this.getHours() > 9 ? this.getHours().toString() : '0' + this.getHours());
+    str = str.replace(/h|H/g, this.getHours());
+    str = str.replace(/mm/, this.getMinutes() > 9 ? this.getMinutes().toString() : '0' + this.getMinutes());
+    str = str.replace(/m/g, this.getMinutes());
+    str = str.replace(/ss|SS/, this.getSeconds() > 9 ? this.getSeconds().toString() : '0' + this.getSeconds());
+    str = str.replace(/s|S/g, this.getSeconds());
+    return str
+}
+
 
 /**
  * 文档加载完成则执行，熟练使用jQuery的选择器
  */
 $(document).ready(function(){
+		// 清除本地缓存
+		// window.localStorage.removeItem("orders");
     //菜单加载
     $.ajax({
         url: g_baseurl+'/pageService',
@@ -150,7 +174,7 @@ function checkout(){
 	// 	orderId:{
 	// 		content:{ orderMap
 	// 		}
-	// 		ifo:{
+	// 		info:{
 	// 			orderId:,
 	// 			imgUrl:,
 	// 			price:,
@@ -179,13 +203,14 @@ function checkout(){
 		}
 		var orderItem = {
 			content : orderMap,
-			ifo : {
+			info : {
 				id : id,
 				imgUrl : imgUrl,
 				price: totalPrice,
+				num: totalNum,
 				name: name,
-				time: time.toLocaleString(),
-				parOrNot:false
+				time: time.Format("yyyy-MM-dd hh:mm"),
+				isPay:false
 			}
 		}
 		orders[id] = orderItem;
@@ -200,7 +225,7 @@ function checkout(){
 		var paramStr = JSON.stringify(orderMap);
 		var transId = guid();
 		generateOrders(transId);
-		window.location.href="Order_page.jsp?orderMap="+paramStr+'&openId='+g_openId+'&brandUidStr='+g_brandUidStr+'&branchUidStr='+g_branchUidStr+'&totalPrice='+totalPrice+'&totalNum='+totalNum+'&transId='+guid();
+		window.location.href="Order_page.jsp?orderMap="+paramStr+'&openId='+g_openId+'&brandUidStr='+g_brandUidStr+'&branchUidStr='+g_branchUidStr+'&totalPrice='+totalPrice+'&totalNum='+totalNum+'&transId='+ transId;
 		// save OrderData
 	}
 }
@@ -233,6 +258,9 @@ function clickPop(){
 	_wraper.dialog({title: title, closeBtn: true});
 };
 
+function myOrder(){
+	window.location.href="myOrder.jsp?openId="+g_openId+'&brandUidStr='+g_brandUidStr+'&branchUidStr='+g_branchUidStr;
+}
 
 </script>
 </head>
@@ -243,8 +271,8 @@ function clickPop(){
 		<div class="left">
 			<div class="top">
 				<div id="ILike">
-					<a href="myOrder.jsp">
-						<span class="icon hartblckgray"></span>我的
+					<a href='javascript:myOrder();'>
+						<span class="icon hartblckgray .on"></span>我的
 					</a>
 				</div>
 <!-- 				<a href="userInfo.jsp" style="font-size:1.5em">test</a> -->
