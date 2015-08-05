@@ -31,12 +31,9 @@ var islock=false;
 // JavaScript code
 
 var openId = '<%=request.getParameter("openId")%>';
-// var orderMap = <%=request.getParameter("orderMap")%>;
-var transId = <%=request.getParameter("transId")%>;
-// 提出对应transId中的数据内容
-var orderItem = JSON.parse(window.localStorage.getItem("orders"))[transId];
-var orderMap = orderItem.content;
-var isPay = orderItem.info.isPay;
+var orderMap = <%=request.getParameter("orderMap")%>;
+
+
 var brandUidStr = '<%=request.getParameter("brandUidStr")%>';
 var branchUidStr = '<%=request.getParameter("branchUidStr")%>';
 var sum = 0.0;
@@ -53,13 +50,13 @@ $(document).ready(function(){
 						'<div class="menudesc">'+
 							'<h3>'+prod.dishName+'</h3>'+
 							'<p style="line-height: 30px;">库存：999</p>'+
-							'<p class="addmark j_isPay" onclick="addmark($(this))">添加备注</p>'+
+							'<p class="addmark" onclick="addmark($(this))">添加备注</p>'+
 						'</div>'+
 						'<div class="price_wrap">'+
 							'<strong>￥<span class="unit_price" data-price="'+prod.dishPrice+'">'+prod.dishPrice+'</span></strong>'+
 							'<div class="fr" max="999">'+
-								'<a href="javascript:void(0);" class="btn minus j_isPay"></a><span class="num"><input type="text" readonly="true" value="'+o.count+
-					'"></span><a href="javascript:void(0);" class="btn plus j_isPay" data-num="'+o.count+'"></a>'+
+								'<a href="javascript:void(0);" class="btn minus"></a><span class="num"><input type="text" readonly="true" value="'+o.count+
+					'"></span><a href="javascript:void(0);" class="btn plus" data-num="'+o.count+'"></a>'+
 							'</div>'+
 						'</div>'+
 					'</div>'+
@@ -81,11 +78,7 @@ $(document).ready(function(){
 		var _prod = orderMap[_dishUid].obj;
 		var plus = $(this).find(".plus");
 		plus.amount(_prod, $.amountCb());
-	});
-	// 如果已经付款则隐藏一部分元素
-	if(isPay === true){
-		$(".j_isPay").hide();
-	}
+	});			
 });
 
 function onEncodeSuccess(data, status) {
@@ -127,7 +120,7 @@ function onEncodeSuccess(data, status) {
 					brandUid: brandUidStr,
 					branchUid: branchUidStr,
 					deskID: desk,
-					transInfo: {'transID':transId,'transTime':'2015-07-16 12:00:00','transAmount':sum,'transDetails':arr}
+					transInfo: {'transID':guid(),'transTime':'2015-07-16 12:00:00','transAmount':sum,'transDetails':arr}
 				}),
 				success: function(d, s){
 					//{'resultCode':,'desc':'','menu':[{'categoryName':'','dishes':[{'dishUid':'','dishName':'','dishPrice':,'dishImageUrl':''}]}]}
@@ -268,27 +261,27 @@ $(function () {
 			<div class="main">
 				<div class="top">
 					<span>
-						<div >我的菜单</div>						
+						<div>我的菜单</div>						
 						
-						<div class="j_isPay">桌号：
+						<div>桌号：
 							<input type="number" id="deskId" style="width:50px; height:30px; font-size:150%"/>
 						</div>
 						<!-- <a href="#" class="add">加菜</a> -->
-						<a href="javascript:popup();" class="clear j_isPay">清空</a>
+						<a href="javascript:popup();" class="clear">清空</a>
 					</span>
 				</div>
 			<form name="myorderform" method="POST" action="">
 			<div class="all" id="menuList">
 				<ul id="usermenu"></ul>
 				</div>
-				<div class="mark j_isPay">
+				<div class="mark">
 					<textarea placeholder=" 备注" name="allmark"></textarea>
 					<input autocomplete="off" type="hidden" name="totalmoney" id="totalmoney" value="">
 					<input autocomplete="off" type="hidden" name="totalnum" id="totalnum" value="">
 					<input autocomplete="off" type="hidden" name="mycid" value="3">
 				</div>
 				<!-- Order's unique hash code -->
-			</form>
+			  <input type="hidden" name="__hash__" value="ef17dc4d12ebf15252f791e926efc859_b2cc6651184016a2bd95c679d9d3b952"></form>
 			</div>
 			</section>
 			<footer data-role="footer">			
@@ -296,7 +289,7 @@ $(function () {
 					<div>
 						<span class="cart"></span>
 						<span> <span class="money">￥<label id="allmoney"></label></span>/<label id="menucount"></label>个菜</span>
-						<a id="checkoutBtn" href="javascript:checkout();" class="btn orange show j_isPay" id="nextstep">结账</a>
+						<a id="checkoutBtn" href="javascript:checkout();" class="btn orange show" id="nextstep">结账</a>
 					</div>
 				</nav>
 			</footer>

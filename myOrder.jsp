@@ -55,7 +55,7 @@ function orderDetail(o){
 	var orders = JSON.parse(window.localStorage.getItem("orders"));
 	var order = orders[orderId];
 	var info = order.info;
-	window.location.href="Order_page.jsp?orderMap=" + JSON.stringify(order.content)+'&openId='+g_openId+'&brandUidStr='+g_brandUidStr+'&branchUidStr='+g_branchUidStr + '&totalPrice='+info.price+'&totalNum=' + info.num + '&transId=' + info.id;
+	window.location.href="Order_page.jsp?orderMap=" + JSON.stringify(order.content)+'&openId='+g_openId+'&brandUidStr='+g_brandUidStr+'&branchUidStr='+g_branchUidStr + '&totalPrice='+info.price+'&totalNum=' + info.num + '&transId=' + info.id +'&isPay=true';
 }
 
 function showMyOrders(){
