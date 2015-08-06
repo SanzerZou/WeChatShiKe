@@ -42,28 +42,6 @@ function guid() {
 	return s4() + s4() + '-' + s4() + '-' + s4() + '-' + 
 		s4() + '-' + s4() + s4() + s4();
 }
-/**
- * 日期格式化
- */
-Date.prototype.Format = function(formatStr) {
-    var str = formatStr;
-    var Week = ['日', '一', '二', '三', '四', '五', '六'];
-    str = str.replace(/yyyy|YYYY/, this.getFullYear());
-    str = str.replace(/yy|YY/, (this.getYear() % 100) > 9 ? (this.getYear() % 100).toString() : '0' + (this.getYear() % 100));
-    str = str.replace(/MM/, (this.getMonth() + 1) > 9 ? (this.getMonth() + 1).toString() : '0' + (this.getMonth() + 1));
-    str = str.replace(/M/g, (this.getMonth() + 1));
-    str = str.replace(/w|W/g, Week[this.getDay()]);
-    str = str.replace(/dd|DD/, this.getDate() > 9 ? this.getDate().toString() : '0' + this.getDate());
-    str = str.replace(/d|D/g, this.getDate());
-    str = str.replace(/hh|HH/, this.getHours() > 9 ? this.getHours().toString() : '0' + this.getHours());
-    str = str.replace(/h|H/g, this.getHours());
-    str = str.replace(/mm/, this.getMinutes() > 9 ? this.getMinutes().toString() : '0' + this.getMinutes());
-    str = str.replace(/m/g, this.getMinutes());
-    str = str.replace(/ss|SS/, this.getSeconds() > 9 ? this.getSeconds().toString() : '0' + this.getSeconds());
-    str = str.replace(/s|S/g, this.getSeconds());
-    return str
-}
-
 
 /**
  * 文档加载完成则执行，熟练使用jQuery的选择器
@@ -172,50 +150,12 @@ function checkout(){
 	// 生成订单函数，将并将订单保存在本地
 	// orders = {
 	// 	orderId:{
-	// 		content:{ orderMap
+	// 		orderItem: {}
+	// 		orderMap : {}
 	// 		}
-	// 		info:{
-	// 			orderId:,
-	// 			imgUrl:,
-	// 			price:,
-	// 			name:,
-	// 			time:,
-	// 			parOrNot:
-	// 		}
-	// 	}
 	// }
 	// orderMap[dishUid] = {'dishUid':dishUid,'count':_curNum, 'obj':prod};
 	// prod = {'dishUid':'','dishName':'','dishPrice':,'dishImageUrl':'', 'dishNum':};
-	function generateOrders(id){
-		var orders = window.localStorage.getItem("orders");
-		// 如果订单对象存在则直接恢复，如果不存在则创建新对象
-		if(orders)
-			orders = JSON.parse(orders);
-		else
-			orders ={};
-		var imgUrl = '';
-		var name = '';
-		var time = new Date();
-		for (var i in orderMap){
-			var tp = orderMap[i]['obj'];
-			name += tp['dishName'] + '*' + tp['dishNum'] + ' ';
-			imgUrl = tp['dishImageUrl'];
-		}
-		var orderItem = {
-			content : orderMap,
-			info : {
-				id : id,
-				imgUrl : imgUrl,
-				price: totalPrice,
-				num: totalNum,
-				name: name,
-				time: time.Format("yyyy-MM-dd hh:mm"),
-				isPay:false
-			}
-		}
-		orders[id] = orderItem;
-		window.localStorage.setItem("orders", JSON.stringify(orders));
-	}
 	if((totalNum>0) && (totalPrice>0)){
 		$('#nextstep').removeClass('orange show')
 									.addClass('gray disabled')
@@ -224,7 +164,8 @@ function checkout(){
 		// relocation "jsp"
 		var paramStr = JSON.stringify(orderMap);
 		var transId = guid();
-		generateOrders(transId);
+		
+		// 跳转页面
 		window.location.href="Order_page.jsp?orderMap="+paramStr+'&openId='+g_openId+'&brandUidStr='+g_brandUidStr+'&branchUidStr='+g_branchUidStr+'&totalPrice='+totalPrice+'&totalNum='+totalNum+'&transId='+ transId;
 		// save OrderData
 	}

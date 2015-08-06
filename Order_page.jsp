@@ -30,13 +30,40 @@ var discount=0;
 var islock=false;
 // JavaScript code
 
-var openId = '<%=request.getParameter("openId")%>';
 var orderMap = <%=request.getParameter("orderMap")%>;
-
 
 var brandUidStr = '<%=request.getParameter("brandUidStr")%>';
 var branchUidStr = '<%=request.getParameter("branchUidStr")%>';
-var sum = 0.0;
+// 全局变量
+var ORDER ={};
+ORDER.totalFee = 0.0;
+ORDER.openId = '<%=request.getParameter("openId")%>';
+ORDER.transId = '<%=request.getParameter("transId")%>';
+
+var submitOrder = function (data) {
+	// 订单上传
+    $.ajax({
+        url: '<%=request.getContextPath()%>/pageService',
+        type: 'post',
+        contentType:'application/json;charset=UTF-8',
+        async: true,
+        dataType: 'json',
+        data: JSON.stringify({
+            service: "DynamicTransmitService",
+            scriptService: "shop_my_order",
+            openId: ORDER.openId,
+            brandUid: brandUidStr,
+            branchUid: branchUidStr,
+            data: data
+        }),
+        success: function(d, s){
+        	var o = jQuery.parseJSON(d.data);
+        },
+        error: function(r, e, o){
+            alert('发生内部错误，请联系公众号管理员')
+        }
+    });
+}
 
 $(document).ready(function(){
 	for(var p in orderMap) {
@@ -116,11 +143,11 @@ function onEncodeSuccess(data, status) {
 				data: JSON.stringify({
 					service: "DynamicTransmitService",
 					scriptService: "shop_order.action",
-					openId: openId,
+					openId: ORDER.openId,
 					brandUid: brandUidStr,
 					branchUid: branchUidStr,
 					deskID: desk,
-					transInfo: {'transID':guid(),'transTime':'2015-07-16 12:00:00','transAmount':sum,'transDetails':arr}
+					transInfo: {'transID':ORDER.transId,'transTime':'2015-07-16 12:00:00','transAmount':ORDER.totalFee,'transDetails':arr}
 				}),
 				success: function(d, s){
 					//{'resultCode':,'desc':'','menu':[{'categoryName':'','dishes':[{'dishUid':'','dishName':'','dishPrice':,'dishImageUrl':''}]}]}
@@ -129,7 +156,14 @@ function onEncodeSuccess(data, status) {
 					var o = jQuery.parseJSON(d.data);
 					//alert(o.resultCode);
 					if(o.resultCode == 0){
-						window.location.href = 'menu.jsp?openId='+openId+'&brandUid='+brandUidStr+'&branchUid='+branchUidStr;
+						// 支付成功更新本地订单为已支付
+						var orders = window.localStorage.getItem("orders");
+						// 本地删除已支付订单
+						delete orders[ORDER.transId];
+						window.localStorage.setItem("orders", JSON.stringify(orders));
+						// 向服务器提交订单
+						submitOrder(_order);
+						window.location.href = 'menu.jsp?openId='+ ORDER.openId +'&brandUid='+brandUidStr+'&branchUid='+branchUidStr;
 						//window.location.href='onlineShop.jsp?openId='+openId;
 					} else {
 						alert(o.desc);
@@ -143,13 +177,26 @@ function onEncodeSuccess(data, status) {
     });
 }
 
-function guid() {
-	function s4() {
-		return Math.floor((1 + Math.random()) * 0x10000)
-		.toString(16)
-		.substring(1);
-	}
-	return s4() + s4()  + s4()  + s4() + s4() + s4() + s4() + s4();
+/**
+ * 日期格式化
+ */
+Date.prototype.Format = function(formatStr) {
+    var str = formatStr;
+    var Week = ['日', '一', '二', '三', '四', '五', '六'];
+    str = str.replace(/yyyy|YYYY/, this.getFullYear());
+    str = str.replace(/yy|YY/, (this.getYear() % 100) > 9 ? (this.getYear() % 100).toString() : '0' + (this.getYear() % 100));
+    str = str.replace(/MM/, (this.getMonth() + 1) > 9 ? (this.getMonth() + 1).toString() : '0' + (this.getMonth() + 1));
+    str = str.replace(/M/g, (this.getMonth() + 1));
+    str = str.replace(/w|W/g, Week[this.getDay()]);
+    str = str.replace(/dd|DD/, this.getDate() > 9 ? this.getDate().toString() : '0' + this.getDate());
+    str = str.replace(/d|D/g, this.getDate());
+    str = str.replace(/hh|HH/, this.getHours() > 9 ? this.getHours().toString() : '0' + this.getHours());
+    str = str.replace(/h|H/g, this.getHours());
+    str = str.replace(/mm/, this.getMinutes() > 9 ? this.getMinutes().toString() : '0' + this.getMinutes());
+    str = str.replace(/m/g, this.getMinutes());
+    str = str.replace(/ss|SS/, this.getSeconds() > 9 ? this.getSeconds().toString() : '0' + this.getSeconds());
+    str = str.replace(/s|S/g, this.getSeconds());
+    return str
 }
 
 function enableCheckoutBtn(){
@@ -168,15 +215,66 @@ function checkout(){
 	disableCheckoutBtn();
 	setTimeout(enableCheckoutBtn, 300);
 
-	sum = 0
+	ORDER.totalFee = 0;
+	var _order = {};
+	_order.prods = [];
+
 	for(var p in orderMap) {
 		var o = orderMap[p];
+		// prod: {'dishUid':'','dishName':'','dishPrice':,'dishImageUrl':''}
 		var prod = o.obj;
-		sum += parseFloat(prod.dishPrice) * parseFloat(o.count);
+		var _info = {};
+		ORDER.totalFee += parseFloat(prod.dishPrice) * parseFloat(o.count);
+		_info.prodname = prod.dishName;
+		_info.imgurl = prod.dishImageUrl;
+		_info.prodcount = o.count;
+		_info.prodprice = prod.dishPrice;
+		_order.prods.push(_info);
 	}
+	_order.openid = ORDER.openId;
+	_order.phoneno ='18550388888';
+	_order.totalfee = ORDER.totalFee;
+	_order.ordernum = ORDER.transId;
+	_order.transtime = (new Date()).Format('YYYY-MM-DD hh:mm');
+
+	// 将订单存储到本地
+	var orders = window.localStorage.getItem("orders");
+	if(orders)
+		orders = JSON.parse(orders);
+	else
+		orders ={};
+	orders[ORDER.transId] = {
+		orderItem : _order,
+		orderMap : orderMap
+	};
+	window.localStorage.setItem("orders", JSON.stringify(orders));
 	
- 	var tradeNo = guid();
-	var prodName = '仅供体验测试，不销售任何产品'
+	var prodName = '仅供体验测试，不销售任何产品';
+
+	// 
+	// $.ajax({
+	//     url: '<%=request.getContextPath()%>/pageService',
+	//     type: 'post',
+	//     contentType:'application/json;charset=UTF-8',
+	//     async: true,
+	//     dataType: 'json',
+	//     data: JSON.stringify({
+	//         service: "DynamicTransmitService",
+	//         scriptService: "shop_refund_order",
+	//         openId: ORDER.openId,
+	//         brandUid: brandUidStr,
+	//         branchUid: branchUidStr,
+	//         data: {ordernum: '527b3497-f993-7da1-45d7-eef2eb32fd38'}
+	//     }),
+	//     success: function(d, s){
+	//     	var o = jQuery.parseJSON(d.data);
+	//     	alert(o);
+	//     },
+	//     error: function(r, e, o){
+	//         alert('发生内部错误，请联系公众号管理员')
+	//     }
+	// });
+
 	$.ajax({
 		url: '<%=request.getContextPath()%>/pageService',
 		type: 'post',
@@ -186,10 +284,10 @@ function checkout(){
 		data: JSON.stringify({
 			service: "DynamicService",
 			scriptService: "userOrder",
-			openId: openId,
+			openId: ORDER.openId,
 			prodDesc: prodName,
-			tradeNo: tradeNo,
-			totalFee: sum,
+			tradeNo: ORDER.transId,
+			totalFee: ORDER.totalFee,
 			clientAddress:'<%=request.getRemoteAddr() %>'
 		}),
 		success: onEncodeSuccess,
@@ -201,7 +299,7 @@ function checkout(){
 
 function discard(){
 	cancel();
-	window.location.href = 'menu.jsp?openId='+openId+'&brandUid='+brandUidStr+'&branchUid='+branchUidStr;
+	window.location.href = 'menu.jsp?openId='+ORDER.openId+'&brandUid='+brandUidStr+'&branchUid='+branchUidStr;
 }
 
 function addmark(obj){

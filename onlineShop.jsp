@@ -5,9 +5,9 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rel="stylesheet" type="text/css" href="css/myCss.css" media="all">
 <!-- jQuery Mobile CDN start -->
-<link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.css">
-<script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
-<script src="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js"></script>
+<link rel="stylesheet" href="js/jquery.mobile-1.3.2.min.css">
+<script src="js/jquery-1.8.3.min.js"></script>
+<script src="js/jquery.mobile-1.3.2.min.js"></script>
 <!-- jQuery Mobile end -->
 
 <title>食客来了</title>	
