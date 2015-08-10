@@ -17,8 +17,6 @@
 
 <title>订单</title>
 <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
-<meta name="Keywords" content="">
-<meta name="Description" content="">
 <!-- Mobile Devices Support @begin -->
 <meta content="telephone=no, address=no" name="format-detection">
 <meta name="apple-mobile-web-app-capable" content="yes"> <!-- apple devices fullscreen -->
@@ -31,17 +29,15 @@ var islock=false;
 // JavaScript code
 
 var orderMap = <%=request.getParameter("orderMap")%>;
-
-var brandUidStr = '<%=request.getParameter("brandUidStr")%>';
-var branchUidStr = '<%=request.getParameter("branchUidStr")%>';
 // 全局变量
 var ORDER ={};
 ORDER.totalFee = 0.0;
 ORDER.openId = '<%=request.getParameter("openId")%>';
 ORDER.transId = '<%=request.getParameter("transId")%>';
+ORDER.brandUid = '<%=request.getParameter("brandUidStr")%>';
+ORDER.branchUid = '<%=request.getParameter("branchUidStr")%>';
 
-var submitOrder = function (data) {
-	// 订单上传
+function submitOrder(data) {
     $.ajax({
         url: '<%=request.getContextPath()%>/pageService',
         type: 'post',
@@ -52,12 +48,13 @@ var submitOrder = function (data) {
             service: "DynamicTransmitService",
             scriptService: "shop_my_order",
             openId: ORDER.openId,
-            brandUid: brandUidStr,
-            branchUid: branchUidStr,
+            brandUid: ORDER.brandUid,
+            branchUid: ORDER.branchUid,
             data: data
         }),
         success: function(d, s){
-        	var o = jQuery.parseJSON(d.data);
+        	// alert(d);
+        	// var o = jQuery.parseJSON(d.data);
         },
         error: function(r, e, o){
             alert('发生内部错误，请联系公众号管理员')
@@ -115,7 +112,7 @@ function onEncodeSuccess(data, status) {
         return;
     }
     
-    //alert(JSON.stringify(data));
+    // alert("开始支付"+"1");
     wx.chooseWXPay({
         timestamp: data.timestamp, // 支付签名时间戳，注意微信jssdk中的所有使用timestamp字段均为小写。但最新版的支付后台生成签名使用的timeStamp字段名需大写其中的S字符
         nonceStr: data.nonceStr, // 支付签名随机串，不长于 32 位
@@ -123,17 +120,15 @@ function onEncodeSuccess(data, status) {
         signType: data.signType, // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
         paySign: data.paySign, // 支付签名
         success: function (res) {
-            //alert('支付成功');
 			var arr = [];
 			for(var p in orderMap) {
 				var o = orderMap[p];
 				delete o.obj;
 				arr.push(o);
 			}
-			//alert('支付成功。');
+			// alert("付款"+'2');
 			var desk = $('#deskId').val();
 			desk = desk==null?'':desk;
-			//alert(desk);
 			$.ajax({
 				url: '<%=request.getContextPath()%>/pageService',
 				type: 'post',
@@ -144,27 +139,35 @@ function onEncodeSuccess(data, status) {
 					service: "DynamicTransmitService",
 					scriptService: "shop_order.action",
 					openId: ORDER.openId,
-					brandUid: brandUidStr,
-					branchUid: branchUidStr,
+					brandUid: ORDER.brandUid,
+					branchUid: ORDER.branchUid,
 					deskID: desk,
-					transInfo: {'transID':ORDER.transId,'transTime':'2015-07-16 12:00:00','transAmount':ORDER.totalFee,'transDetails':arr}
+					transInfo: {
+						'transID':ORDER.transId,
+						'transTime': (new Date()).Format('YYYY-MM-DD hh:mm:ss'),
+						'transAmount':ORDER.totalFee,
+						'transDetails':arr
+					}
 				}),
 				success: function(d, s){
 					//{'resultCode':,'desc':'','menu':[{'categoryName':'','dishes':[{'dishUid':'','dishName':'','dishPrice':,'dishImageUrl':''}]}]}
-					//alert('支付成功');
-					//window.location.href='onlineShop.jsp?openId='+openId;
 					var o = jQuery.parseJSON(d.data);
 					//alert(o.resultCode);
 					if(o.resultCode == 0){
-						// 支付成功更新本地订单为已支付
-						var orders = window.localStorage.getItem("orders");
-						// 本地删除已支付订单
-						delete orders[ORDER.transId];
-						window.localStorage.setItem("orders", JSON.stringify(orders));
-						// 向服务器提交订单
-						submitOrder(_order);
-						window.location.href = 'menu.jsp?openId='+ ORDER.openId +'&brandUid='+brandUidStr+'&branchUid='+branchUidStr;
-						//window.location.href='onlineShop.jsp?openId='+openId;
+						// 将已支付订单从本地订单中删除
+						var local = readLocal();
+						var orders = local[ORDER.brandUid];
+						var order = {};
+
+						for (var i = 0; i < orders.length; i++) {
+							if (orders[i].orderItem.ordernum === ORDER.transId) {
+								order = jQuery.parseJSON(JSON.stringify(orders[i]));
+								orders.splice(i, 1);
+								window.localStorage.setItem("Lailr", JSON.stringify(local));
+							}
+						}
+						submitOrder(order.orderItem);
+						window.location.href = 'menu.jsp?openId='+ ORDER.openId +'&brandUid='+ORDER.brandUid+'&branchUid='+ORDER.branchUid;
 					} else {
 						alert(o.desc);
 					}
@@ -200,21 +203,40 @@ Date.prototype.Format = function(formatStr) {
 }
 
 function enableCheckoutBtn(){
-	$('#checkoutBtn').addClass('orange');
-	$('#checkoutBtn').removeClass('disabled');
-	$('#checkoutBtn').removeClass('gray');	
+	$('#checkoutBtn').addClass('orange')
+					.removeClass('disabled')
+					.removeClass('gray')	
+					.attr("href", "javascript:checkout();");	
 }
 
 function disableCheckoutBtn(){
-	$('#checkoutBtn').removeClass('orange');
-	$('#checkoutBtn').addClass('disabled');
-	$('#checkoutBtn').addClass('gray');	
+	$('#checkoutBtn').removeClass('orange')
+					.addClass('disabled')
+					.addClass('gray')
+					.attr("href", "javascript:;");	
+}
+
+var readLocal = function () {
+	return JSON.parse(window.localStorage.getItem("Lailr"));
+}
+
+var writeLocal = function (d) {
+	var local = readLocal();
+	var orders = local[ORDER.brandUid];
+	for (var i = 0; i < orders.length; i++) {
+		if (orders[i].orderItem.ordernum === ORDER.transId) {
+			orders[i] = d;
+			window.localStorage.setItem("Lailr", JSON.stringify(local));
+			return;
+		}
+	}
+	local[ORDER.brandUid].push(d);
+	window.localStorage.setItem("Lailr", JSON.stringify(local));
 }
 	
 function checkout(){
 	disableCheckoutBtn();
-	setTimeout(enableCheckoutBtn, 300);
-
+	// setTimeout(enableCheckoutBtn, 300);
 	ORDER.totalFee = 0;
 	var _order = {};
 	_order.prods = [];
@@ -232,48 +254,19 @@ function checkout(){
 		_order.prods.push(_info);
 	}
 	_order.openid = ORDER.openId;
+	_order.branduid = ORDER.brandUid;
 	_order.phoneno ='18550388888';
 	_order.totalfee = ORDER.totalFee;
 	_order.ordernum = ORDER.transId;
 	_order.transtime = (new Date()).Format('YYYY-MM-DD hh:mm');
 
 	// 将订单存储到本地
-	var orders = window.localStorage.getItem("orders");
-	if(orders)
-		orders = JSON.parse(orders);
-	else
-		orders ={};
-	orders[ORDER.transId] = {
+	writeLocal({
 		orderItem : _order,
 		orderMap : orderMap
-	};
-	window.localStorage.setItem("orders", JSON.stringify(orders));
-	
-	var prodName = '仅供体验测试，不销售任何产品';
+	});
 
-	// 
-	// $.ajax({
-	//     url: '<%=request.getContextPath()%>/pageService',
-	//     type: 'post',
-	//     contentType:'application/json;charset=UTF-8',
-	//     async: true,
-	//     dataType: 'json',
-	//     data: JSON.stringify({
-	//         service: "DynamicTransmitService",
-	//         scriptService: "shop_refund_order",
-	//         openId: ORDER.openId,
-	//         brandUid: brandUidStr,
-	//         branchUid: branchUidStr,
-	//         data: {ordernum: '527b3497-f993-7da1-45d7-eef2eb32fd38'}
-	//     }),
-	//     success: function(d, s){
-	//     	var o = jQuery.parseJSON(d.data);
-	//     	alert(o);
-	//     },
-	//     error: function(r, e, o){
-	//         alert('发生内部错误，请联系公众号管理员')
-	//     }
-	// });
+	var prodName = '仅供体验测试，不销售任何产品';
 
 	$.ajax({
 		url: '<%=request.getContextPath()%>/pageService',
@@ -299,7 +292,7 @@ function checkout(){
 
 function discard(){
 	cancel();
-	window.location.href = 'menu.jsp?openId='+ORDER.openId+'&brandUid='+brandUidStr+'&branchUid='+branchUidStr;
+	window.location.href = 'menu.jsp?openId='+ORDER.openId+'&brandUid='+ORDER.brandUid+'&branchUid='+ORDER.branchUid;
 }
 
 function addmark(obj){

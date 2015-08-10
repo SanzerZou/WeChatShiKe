@@ -12,7 +12,6 @@
 
 <title>食客来了</title>	
 <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
-<meta content="width=device-width" name="viewport">
 <!-- Mobile Devices Support @begin -->
 <meta content="telephone=no, address=no" name="format-detection">
 <meta name="apple-mobile-web-app-capable" content="yes"> <!-- apple devices fullscreen -->

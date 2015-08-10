@@ -4,14 +4,13 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <!-- jQuery Mobile CDN start -->
-<link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.css">
-<script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
-<script src="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js"></script>
+<link rel="stylesheet" href="js/jquery.mobile-1.3.2.min.css">
+<script src="js/jquery-1.8.3.min.js"></script>
+<script src="js/jquery.mobile-1.3.2.min.js"></script>
 <!-- jQuery Mobile end -->
 
 <title>食客来了</title>	
 <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
-<meta content="width=device-width" name="viewport">
 <!-- Mobile Devices Support @begin -->
 <meta content="telephone=no, address=no" name="format-detection">
 <meta name="apple-mobile-web-app-capable" content="yes"> <!-- apple devices fullscreen -->
@@ -24,13 +23,16 @@
 <script type="text/javascript">
 var ORDER ={};
 ORDER.openId = '<%=request.getParameter("openId")%>';
-ORDER.brandUidStr = '<%=request.getParameter("brandUidStr")%>';
-ORDER.branchUidStr = '<%=request.getParameter("branchUidStr")%>';
+ORDER.brandUid = '<%=request.getParameter("brandUidStr")%>';
+ORDER.branchUid = '<%=request.getParameter("branchUidStr")%>';
 
 // {data:[{"transtime":"","prods":[{"orderid":"","orderby":0,"prodname":"","id":,"prodprice":,"prodcount":}],"totalfee":,"openid":"","ordernum":"","id":"","phoneno":""}],"resultCode":,"desc":"success"}"
+/**
+ * 文档加载完首先获得远程订单数据，然后已支付订单详情。
+ */
 $(document).ready(function(){
   	//  显示已支付订单
-	var showRemote = function (data) {
+	var LoadRemote = function (data) {
 		var wrap = $("#list-ispay");
 		var templet = '<li>'+
 				'<a href="#" index="{{index}}" onclick="romoteOrderDetail({{index}})">'+
@@ -69,15 +71,18 @@ $(document).ready(function(){
             service: "DynamicTransmitService",
             scriptService: "shop_query_order",
             openId: ORDER.openId,
-            brandUid: ORDER.brandUidStr,
-            branchUid: ORDER.branchUidStr,
-            data: { openid: ORDER.openId }
+            brandUid: ORDER.brandUid,
+            branchUid: ORDER.branchUid,
+            data: { 
+            	openid: ORDER.openId, 
+            	branduid: ORDER.brandUid 
+            }
         }),
         success: function(d, s){
         	var o = jQuery.parseJSON(d.data);
         	if (o.resultCode == 0){
         		ORDER.data = o.data;
-        		showRemote(o.data);
+        		LoadRemote(o.data);
         	}
         },
         error: function(r, e, o){
@@ -85,39 +90,55 @@ $(document).ready(function(){
         }
   	});
   	// 显示本地订单
-  	showLocal();
+  	LoadLocal();
 });
-
+/**
+ * 弹出是否删除对话框
+ */
 function openPopUp(o){
 	var dlg = $("#mdialog");
-	dlg.attr('orderid', $(o).attr('orderid'));
+	dlg.attr('index', o.toString());
 }
 /**
- * 删除指定订单
+ * 读本地存储数据
+ */
+var readLocal = function () {
+	return JSON.parse(window.localStorage.getItem("Lailr"));
+}
+/**
+ * 写本地存储数据
+ */
+var writeLocal = function (d) {
+	window.localStorage.setItem("Lailr", JSON.stringify(d));
+}
+/**
+ * 删除未支付订单
  */
 function onDeleteOrder(){
-	var oid = $("#mdialog").attr('orderid');
-	var orders = JSON.parse(window.localStorage.getItem("orders"));
-	delete orders[oid];
-	window.localStorage.setItem("orders", JSON.stringify(orders));
-	showLocal();
+	var index = parseInt( $("#mdialog").attr('index') );
+	var local = readLocal();
+	local[ORDER.brandUid].splice(index, 1);
+	writeLocal(local);
+	LoadLocal();
 }
 /**
- *	跳转订单详情页面 
+ *	跳转未支付订单详情
  */
-function localOrderDetail(o){
-	var orderId = $(o).attr("orderid");
-	var orders = JSON.parse(window.localStorage.getItem("orders"));
-	var order = orders[orderId];
+function localOrderDetail(index){
+	var local = readLocal();
+	var orders = local[ORDER.brandUid];
+	var order = orders[index];
 	var item = order.orderItem;
 	var num = 0;
 	for (var i = 0; i < item.prods.length; i++){
 		var tp = item.prods[i];
 		num += tp.prodcount;
 	}
-	window.location.href="Order_page.jsp?orderMap=" + JSON.stringify(order.orderMap)+'&openId='+ORDER.openId+'&brandUidStr='+ORDER.brandUidStr+'&branchUidStr='+ORDER.branchUidStr + '&totalPrice='+item.totalfee+'&totalNum=' + num + '&transId=' + item.ordernum;
+	window.location.href="Order_page.jsp?orderMap=" + JSON.stringify(order.orderMap)+'&openId='+ORDER.openId+'&brandUidStr='+ORDER.brandUid+'&branchUidStr='+ORDER.branchUid + '&totalPrice='+item.totalfee+'&totalNum=' + num + '&transId=' + item.ordernum;
 }
-// 已支付订单详情页面，支持退款操作 
+/**
+ * 跳转已支付订单详情
+ */
 function romoteOrderDetail(index) {
 	var item = ORDER.data[index];
 	var num = 0;
@@ -125,32 +146,37 @@ function romoteOrderDetail(index) {
 		var tp = item.prods[i];
 		num += tp.prodcount;
 	}
-	window.location.href="Order_detail.jsp?detail=" + JSON.stringify(item)+'&openId='+ORDER.openId+'&brandUidStr='+ORDER.brandUidStr+'&branchUidStr='+ORDER.branchUidStr + '&totalPrice='+item.totalfee+'&totalNum=' + num + '&transId=' + item.ordernum;
+	window.location.href="Order_detail.jsp?detail=" + JSON.stringify(item)+'&openId='+ORDER.openId+'&brandUidStr='+ORDER.brandUid+'&branchUidStr='+ORDER.branchUid + '&totalPrice='+item.totalfee+'&totalNum=' + num + '&transId=' + item.ordernum;
 
 }
 
-function showLocal(){
+/**
+ * 加载本地订单
+ */
+
+function LoadLocal(){
 	var wrap = $('#list-nopay');
 	wrap.html("");
 	// 获取本地数据
-	var orders = JSON.parse(window.localStorage.getItem("orders"));
+	var local = readLocal();
 	var templet = '<li>'+
-					'<a href="#" orderid="{{orderid}}" onclick="localOrderDetail(this)">'+
+					'<a href="#" onclick="localOrderDetail({{index}})">'+
 						'<img src="{{imgurl}}">'+
 						'<h2>￥{{totalfee}}</h3>'+
 						'<p>{{name}}</p>'+
 						'<p class="ui-li-aside">{{transtime}}</p>'+
 					'</a>'+
-					'<a orderid="{{orderid}}" href = "#mdialog" data-rel="popup" onclick="openPopUp(this)" data-icon="delete"></a>'+
+					'<a href = "#mdialog" data-rel="popup" onclick="openPopUp({{index}})" data-icon="delete"></a>'+
 				'</li>';
 	var s = [];
+	var orders = local[ORDER.brandUid];
 	for (var id in orders) {
 		var tp = orders[id].orderItem;
 		var name = '';
 		for (var j = 0; j < tp.prods.length; j++){
 			name += tp.prods[j].prodname + '*' + tp.prods[j].prodcount + ' ';
 		}
-		var _str = templet.replace(/{{orderid}}/g, id)
+		var _str = templet.replace(/{{index}}/g, id)
 						.replace(/{{imgurl}}/g, tp.prods[0].imgurl)
 						.replace(/{{totalfee}}/g, tp.totalfee)
 						.replace(/{{name}}/g, name)
@@ -159,6 +185,17 @@ function showLocal(){
 	};
 	wrap.append(s.join(''));
 	wrap.listview('refresh');
+}
+
+var showLocal = function (b) {
+	if (b) {
+		$("#list-ispay").hide();
+		$("#list-nopay").show();
+	}
+	else {
+		$("#list-nopay").hide();
+		$("#list-ispay").show();
+	}
 }
 </script>
 </head>
@@ -169,8 +206,8 @@ function showLocal(){
 	<div data-role="header"  data-theme="c">
 		<div data-role="navbar" data-iconpos="top">
 			<ul>
-				<li><a href="#" data-icon="home"  class="ui-btn-active">未支付</a></li>
-				<li><a href="#ispay" data-icon="info" data-transition="none">已支付</a></li>
+				<li><a href="#" data-icon="home"  class="ui-btn-active" onclick="showLocal(true)">未支付</a></li>
+				<li><a href="#" data-icon="info" data-transition="none" onclick="showLocal(false)">已支付</a></li>
 			</ul>
 		</div>
 	</div>
@@ -178,6 +215,8 @@ function showLocal(){
 	<div data-role="content" data-theme="c">
 		<ul id="list-nopay" data-role="listview">
 		</ul>
+		<ul id="list-ispay" data-role="listview" style="display:none">
+		</ul>                                               
 	</div>
 	<!-- popup -->
 	<div  data-role="popup" data-theme="a" id="mdialog">		
@@ -190,22 +229,6 @@ function showLocal(){
 				<a href="#" data-role="button" data-rel="back" data-theme="b">取消</a>  
 			</div>
 	</div>
-</div>
-<div data-role="page" id="ispay">
-<!-- 导航栏 -->
-	<div data-role="header"  data-theme="c">
-		<div data-role="navbar" data-iconpos="top">
-			<ul>
-				<li><a href="#nopay" data-icon="home" data-transition="none">未支付</a></li>
-				<li><a href="#" data-icon="info" class="ui-btn-active">已支付</a></li>
-			</ul>
-		</div>
-	</div>
-	<!-- 内容 -->
-	<div data-role="content" data-theme="c">
-		<ul id="list-ispay" data-role="listview">
-		</ul>
-	</div>	
 </div>
 </body>
 </html>

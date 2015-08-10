@@ -14,8 +14,6 @@
 
 <title>订单详情</title>
 <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
-<meta name="Keywords" content="">
-<meta name="Description" content="">
 <!-- Mobile Devices Support @begin -->
 <meta content="telephone=no, address=no" name="format-detection">
 <meta name="apple-mobile-web-app-capable" content="yes"> <!-- apple devices fullscreen -->
@@ -63,6 +61,48 @@ $(document).ready(function(){
 	$('#menucount').text(ORDER.totalNum);		
 });
 
+var enableDrawBackBtn = function () {
+	$('#drawback-bnt').addClass('green')
+					.removeClass('disabled')
+					.removeClass('gray')
+					.attr("href", "javascript:drawback();");	
+}
+
+var disableCheckoutBtn = function (){
+	$('#drawback-bnt').removeClass('green')
+					.addClass('disabled')
+					.addClass('gray')
+					.attr("href", "javascript:;");
+
+}
+
+var drawback = function () {
+	// disable Btn
+	disableCheckoutBtn();
+	$.ajax({
+	    url: '<%=request.getContextPath()%>/pageService',
+	    type: 'post',
+	    contentType:'application/json;charset=UTF-8',
+	    async: true,
+	    dataType: 'json',
+	    data: JSON.stringify({
+	        service: "DynamicTransmitService",
+	        scriptService: "shop_refund_order",
+	        openId: ORDER.openId,
+	        brandUid: ORDER.brandUidStr,
+	        branchUid: ORDER.branchUidStr,
+	        data: {ordernum: ORDER.transId}
+	    }),
+	    success: function(d, s){
+	    	var o = jQuery.parseJSON(d.data);
+	    	alert("退款成功");
+	    },
+	    error: function(r, e, o){
+	        alert('发生内部错误，请联系公众号管理员');
+	        enableDrawBackBtn();
+	    }
+	});
+}
 </script>
 </head>  
   <body>
@@ -84,7 +124,7 @@ $(document).ready(function(){
 					<div>
 						<span class="cart"></span>
 						<span> <span class="money">￥<label id="allmoney"></label></span>/<label id="menucount"></label>个菜</span>
-						<a id="checkoutBtn" href="javascript:checkout();" class="btn green show" id="nextstep">退款</a>
+						<a href="javascript:drawback();" class="btn green show" id="drawback-bnt">退款</a>
 					</div>
 				</nav>
 			</footer>

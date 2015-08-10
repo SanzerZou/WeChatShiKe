@@ -11,7 +11,6 @@
 <script type="text/javascript" src="js/dialog.js" charset="UTF-8"></script>
 <title>食客来了</title>	
 <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
-<meta content="width=device-width" name="viewport">
 <meta name="Keywords" content="">
 <meta name="Description" content="">
 <!-- Mobile Devices Support @begin -->
@@ -20,10 +19,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 	<!-- Mobile Devices Support @end -->
 <script type="text/javascript">
-var g_baseurl = '<%=request.getContextPath()%>';
-var g_openId = '<%=request.getParameter("openId")%>';
-var g_brandUidStr = '<%=request.getParameter("brandUid")%>';
-var g_branchUidStr = '<%=request.getParameter("branchUid")%>';
+var ORDER = {};
+ORDER.openId = '<%=request.getParameter("openId")%>';
+ORDER.brandUid = '<%=request.getParameter("brandUid")%>';
+ORDER.branchUid = '<%=request.getParameter("branchUid")%>';
 
 var discount=0; 
 var totalPrice=totalNum=0;
@@ -39,19 +38,22 @@ function guid() {
 			.toString(16)
 			.substring(1);
 	}
-	return s4() + s4() + '-' + s4() + '-' + s4() + '-' + 
-		s4() + '-' + s4() + s4() + s4();
+	return s4() + s4() + s4()  + s4()  +  s4()  + s4() + s4() + s4();
 }
 
 /**
  * 文档加载完成则执行，熟练使用jQuery的选择器
  */
 $(document).ready(function(){
-		// 清除本地缓存
-		// window.localStorage.removeItem("orders");
+	// 清除本地缓存
+	window.localStorage.removeItem("orders");
+	// 本地订单初始化
+	var lailr = jQuery.parseJSON( window.localStorage.getItem("Lailr") ) || {};
+	lailr[ORDER.brandUid] = lailr[ORDER.brandUid] || [];
+	window.localStorage.setItem( "Lailr", JSON.stringify( lailr ) );
     //菜单加载
     $.ajax({
-        url: g_baseurl+'/pageService',
+        url: '<%=request.getContextPath()%>/pageService',
         type: 'post',
         contentType:'application/json;charset=UTF-8',
         async: true,
@@ -59,9 +61,9 @@ $(document).ready(function(){
         data: JSON.stringify({
             service: "DynamicTransmitService",
             scriptService: "shop_menuLoad.action",
-            openId: g_openId,
-            brandUid: g_brandUidStr,
-            branchUid: g_branchUidStr
+            openId: ORDER.openId,
+            brandUid: ORDER.brandUid,
+            branchUid: ORDER.branchUid
         }),
         success: function(d, s){
         	//{'resultCode':,'desc':'','menu':[{'categoryName':'','dishes':[{'dishUid':'','dishName':'','dishPrice':,'dishImageUrl':''}]}]}
@@ -93,13 +95,42 @@ function initData(){
 		};
 	};	
 }
+// 截取字符长度
+function cutstr(str, len) {
+    var temp,
+        icount = 0,
+        patrn = /[^\x00-\xff]/,
+        strre = "";
+    for (var i = 0; i < str.length; i++) {
+        if (icount < len - 1) {
+            temp = str.substr(i, 1);
+            if (patrn.exec(temp) == null) {
+                icount = icount + 1
+            } 
+            else {
+                icount = icount + 2
+            }
+            strre += temp
+            } 
+        else 
+        {
+            if (patrn.exec(temp) == null) {
+                icount = icount + 1
+            } 
+            else {
+                icount = icount + 2
+            }
+        }
+    }
+    return icount <= len ? strre : (strre + '..');
+}
 
 $.showDishs = function(menu_num){
 	var dish_list = g_data[menu_num]['dishes'];
 	for(var i = 0, len = dish_list.length; i < len; i++){
 		var s = ' <li data-dishUid="'+dish_list[i]["dishUid"]+'" data-index='+i+'> <div class="licontent"> <div class="span showPop"> ' + 
 			'<img src="'+dish_list[i]["dishImageUrl"]+'"> </div> <div class="menudesc"> <h3> ' +
-			dish_list[i]["dishName"] + '</h3><p class="salenum"> 月售：<span class="sale_num"> 0</span> <br>' +
+			cutstr(dish_list[i]["dishName"], 12) + '</h3><p class="salenum"> 月售：<span class="sale_num"> 0</span> <br>' +
 					'库存：<span class="sale_num"> 1000</span></p><!-- <p class="mylovedish">'+
 					'<span class="icon hart"></span></p> --> <div class="info"></div> </div>'+
 				'<div class="price_wrap">'+
@@ -166,7 +197,7 @@ function checkout(){
 		var transId = guid();
 		
 		// 跳转页面
-		window.location.href="Order_page.jsp?orderMap="+paramStr+'&openId='+g_openId+'&brandUidStr='+g_brandUidStr+'&branchUidStr='+g_branchUidStr+'&totalPrice='+totalPrice+'&totalNum='+totalNum+'&transId='+ transId;
+		window.location.href="Order_page.jsp?orderMap="+paramStr+'&openId='+ORDER.openId+'&brandUidStr='+ORDER.brandUid+'&branchUidStr='+ORDER.branchUid+'&totalPrice='+totalPrice+'&totalNum='+totalNum+'&transId='+ transId;
 		// save OrderData
 	}
 }
@@ -200,7 +231,7 @@ function clickPop(){
 };
 
 function myOrder(){
-	window.location.href="myOrder.jsp?openId="+g_openId+'&brandUidStr='+g_brandUidStr+'&branchUidStr='+g_branchUidStr;
+	window.location.href="myOrder.jsp?openId="+ORDER.openId+'&brandUidStr='+ORDER.brandUid+'&branchUidStr='+ORDER.branchUid;
 }
 
 </script>
