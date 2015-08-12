@@ -4,6 +4,9 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rel="stylesheet" type="text/css" href="css/myCss.css" media="all">
+<!-- font awesome icon-->
+<link rel="stylesheet" href="css/font-awesome.min.css">
+
 <!-- jQuery Mobile CDN start -->
 <link rel="stylesheet" href="js/jquery.mobile-1.3.2.min.css">
 <script src="js/jquery-1.8.3.min.js"></script>
@@ -24,6 +27,13 @@
 	margin:0 4%;
 	border-bottom:1px solid;
 	border-color: rgb(192, 192, 192);
+}
+.ui-navbar li .ui-btn .ui-btn-inner {
+	padding-top: 1.2em;
+	padding-bottom: 1.2em;
+}
+.ui-header .ui-btn-inner, .ui-footer .ui-btn-inner, .ui-mini .ui-btn-inner {
+	font-size: 16px;
 }
 </style>
 
@@ -54,7 +64,7 @@ $(document).ready(function(){
 	    			var dist = Math.round(Math.random()*1000);
 	    			var br = o.branches[i];
 	    			// onclick事件绑定； 设置brand Uid和uid这两个参数用于查找商家
-	    			s += 	'<li onclick="showMenu(this)" uid="'+br.uid+'" buid="'+br.brandUid+'">'+
+	    			s += 	'<li onclick="showMenu(this)" data-icon="false" uid="'+br.uid+'" buid="'+br.brandUid+'">'+
 												'<a href="#">'+
 													'<h2>'+br.name+'</h2>'+
 													'<p>'+br.address+'</p>'+
@@ -91,8 +101,8 @@ function showMenu(li){
 	<div data-role="header"  data-theme="c">
 		<div data-role="navbar" data-iconpos="top">
 			<ul>
-				<li><a href="#" data-icon="home"  class="ui-btn-active">列表</a></li>
-				<li><a href="#" data-icon="info">地图</a></li>
+				<li><a href="#" class="ui-btn-active" style="font-size:3em "><i class="icon-th-list"></i>&nbsp;列表</a></li>
+				<li><a href="#" style="font-size:3em"><i class="icon-map-marker"></i>&nbsp;地图</a></li>
 			</ul>
 		</div>
 	</div>

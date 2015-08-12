@@ -9,7 +9,10 @@
 <script src="js/jquery.mobile-1.3.2.min.js"></script>
 <!-- jQuery Mobile end -->
 
-<title>食客来了</title>	
+<!-- font awesome icon-->
+<link rel="stylesheet" href="css/font-awesome.min.css">
+
+<title>我的订单</title>	
 <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
 <!-- Mobile Devices Support @begin -->
 <meta content="telephone=no, address=no" name="format-detection">
@@ -18,6 +21,13 @@
 	<!-- Mobile Devices Support @end -->
 <style type="text/css">
 .ui-dialog .ui-dialog-contain { margin-top: 40% }
+.ui-navbar li .ui-btn .ui-btn-inner {
+	padding-top: 1.2em;
+	padding-bottom: 1.2em;
+}
+.ui-header .ui-btn-inner, .ui-footer .ui-btn-inner, .ui-mini .ui-btn-inner {
+	font-size: 16px;
+}
 </style>
 
 <script type="text/javascript">
@@ -34,14 +44,13 @@ $(document).ready(function(){
   	//  显示已支付订单
 	var LoadRemote = function (data) {
 		var wrap = $("#list-ispay");
-		var templet = '<li>'+
+		var templet = '<li data-icon="false">'+
 				'<a href="#" index="{{index}}" onclick="romoteOrderDetail({{index}})">'+
 					'<img src="{{imgurl}}">'+
 					'<h2>￥{{totalfee}}</h3>'+
 					'<p>{{name}}</p>'+
 					'<p class="ui-li-aside">{{transtime}}</p>'+
 				'</a>'+
-				'<a index="{{index}}" href = "#mdialog" data-rel="popup" data-icon="check"></a>'+
 			'</li>';
 		var s = [];
 		for (var i = 0; i < data.length; i++) {
@@ -166,11 +175,11 @@ function LoadLocal(){
 						'<p>{{name}}</p>'+
 						'<p class="ui-li-aside">{{transtime}}</p>'+
 					'</a>'+
-					'<a href = "#mdialog" data-rel="popup" onclick="openPopUp({{index}})" data-icon="delete"></a>'+
+					'<a href = "#mdialog" data-rel="popup" onclick="openPopUp({{index}})" data-icon="false"><i class="icon-trash"></i></a>'+
 				'</li>';
 	var s = [];
 	var orders = local[ORDER.brandUid];
-	for (var id in orders) {
+	for (var id = orders.length - 1; id >= 0; id--) {
 		var tp = orders[id].orderItem;
 		var name = '';
 		for (var j = 0; j < tp.prods.length; j++){
@@ -206,8 +215,8 @@ var showLocal = function (b) {
 	<div data-role="header"  data-theme="c">
 		<div data-role="navbar" data-iconpos="top">
 			<ul>
-				<li><a href="#" data-icon="home"  class="ui-btn-active" onclick="showLocal(true)">未支付</a></li>
-				<li><a href="#" data-icon="info" data-transition="none" onclick="showLocal(false)">已支付</a></li>
+				<li><a href="#" class="ui-btn-active" onclick="showLocal(true)"><i class="icon-shopping-cart"></i>&nbsp;未支付</a></li>
+				<li><a href="#" onclick="showLocal(false)"><i class="icon-ok-sign"></i>&nbsp;已支付</a></li>
 			</ul>
 		</div>
 	</div>

@@ -6,10 +6,13 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rel="stylesheet" type="text/css" href="css/common.css" media="all">
 <link rel="stylesheet" type="text/css" href="css/color.css" media="all">
+<!-- font awesome icon-->
+<link rel="stylesheet" href="css/font-awesome.min.css">
+
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/dmain.js" charset="UTF-8"></script>
 <script type="text/javascript" src="js/dialog.js" charset="UTF-8"></script>
-<title>食客来了</title>	
+<title>点菜</title>	
 <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
 <meta name="Keywords" content="">
 <meta name="Description" content="">
@@ -130,7 +133,7 @@ $.showDishs = function(menu_num){
 	for(var i = 0, len = dish_list.length; i < len; i++){
 		var s = ' <li data-dishUid="'+dish_list[i]["dishUid"]+'" data-index='+i+'> <div class="licontent"> <div class="span showPop"> ' + 
 			'<img src="'+dish_list[i]["dishImageUrl"]+'"> </div> <div class="menudesc"> <h3> ' +
-			cutstr(dish_list[i]["dishName"], 12) + '</h3><p class="salenum"> 月售：<span class="sale_num"> 0</span> <br>' +
+			cutstr(dish_list[i]["dishName"], 11) + '</h3><p class="salenum"> 月售：<span class="sale_num"> 0</span> <br>' +
 					'库存：<span class="sale_num"> 1000</span></p><!-- <p class="mylovedish">'+
 					'<span class="icon hart"></span></p> --> <div class="info"></div> </div>'+
 				'<div class="price_wrap">'+
@@ -231,6 +234,7 @@ function clickPop(){
 };
 
 function myOrder(){
+	// window.location.href="couponListInfo.jsp";
 	window.location.href="myOrder.jsp?openId="+ORDER.openId+'&brandUidStr='+ORDER.brandUid+'&branchUidStr='+ORDER.branchUid;
 }
 
@@ -243,8 +247,8 @@ function myOrder(){
 		<div class="left">
 			<div class="top">
 				<div id="ILike">
-					<a href='javascript:myOrder();'>
-						<span class="icon hartblckgray .on"></span>我的
+					<a href='javascript:myOrder();' style="font-size:1.2em;font-weight:500">
+						<i class="icon-magnet"></i>&nbsp;我的
 					</a>
 				</div>
 <!-- 				<a href="userInfo.jsp" style="font-size:1.5em">test</a> -->
@@ -266,8 +270,7 @@ function myOrder(){
 		<footer data-role="footer">			
 			<nav class="g_nav">
 				<div>
-					<span class="cart"></span>
-					<span> <span class="money">￥<label id="allmoney">0</label> </span>/<label id="menucount">0</label>个菜</span>
+					<span> <span class="money"><i class="icon-shopping-cart icon-large" style="color: gray"></i>&nbsp;￥<label id="allmoney">0</label> </span>/<label id="menucount">0</label>个菜</span>
 					<a href="javascript:checkout();" class="btn gray disabled" id="nextstep">选好了</a>
 				</div>
 			</nav>

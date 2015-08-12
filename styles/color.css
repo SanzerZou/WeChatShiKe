@@ -108,7 +108,7 @@ ul.pay li{ float:left;border-bottom-color:#c8c7cc;  }
 /*menu.html*/
 .menu .left{background:#e6e8e7; }
 .menu .left .top >div{ background:#fff;  border-color: #b2b1b1;}
-.menu .left .content ul li.on{ background:#fff;}
+.menu .left .content ul li.on{ background:#fff; border-left: 2px solid #ef7f2d;}
 .menu .right{ background:#fff;}
 .menu .right ul li { border-bottom-color: #d0cfd4;}
 .menu .right ul{ border-top-color: #d0cfd4;}
