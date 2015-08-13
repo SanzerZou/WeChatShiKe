@@ -13,6 +13,10 @@
 <script src="js/jquery.mobile-1.3.2.min.js"></script>
 <!-- jQuery Mobile end -->
 
+<!-- Baidu Map Api -->
+<script type="text/javascript" src="http://api.map.baidu.com/api?type=quick&ak=biZdDTipTS4pMbFWk2oiDG3X&v=1.0"></script>
+<!-- end -->
+
 <title>食客来了</title>	
 <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
 <!-- Mobile Devices Support @begin -->
@@ -35,6 +39,22 @@
 .ui-header .ui-btn-inner, .ui-footer .ui-btn-inner, .ui-mini .ui-btn-inner {
 	font-size: 16px;
 }
+
+.wrap {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+#map-wrap {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	display: none;
+	position: absolute;
+	left:0;
+	bottom: 0;
+}
 </style>
 
 <script type="text/javascript">
@@ -44,6 +64,8 @@ var g_brandUidStr = 'bf754d76-26ac-11e5-8c51-55a12bf13948';
 
 $(document).ready(function(){
 	//店铺信息加载
+	var myMap = baiduMap();
+	myMap.creat();
 	$.ajax({
 	    url: g_baseurl+'/pageService',
 	    type: 'post',
@@ -93,25 +115,53 @@ function showMenu(li){
 	window.location.href = 'menu.jsp?openId='+g_openId+'&brandUid='+buid+'&branchUid='+uid;
 }
 
+var showList = function () {
+	$("#map-wrap").hide();
+	$("#storeList-wrap").show();
+}
+
+var showMap = function () {
+	$("#storeList-wrap").hide();
+	$("#map-wrap").show();
+}
+// baiduMap 构造函数
+var baiduMap = function () {
+	// private var
+	var map;
+	var point;   // 创建点坐标
+	// public function
+	// construct function
+	var creat = function () {
+		map = new BMap.Map("map-wrap");            // 创建Map实例
+		point = new BMap.Point(116.404, 39.915);   // 创建点坐标
+		map.centerAndZoom(point,15);               // 初始化地图,设置中心点坐标和地图级别。
+	}
+	return {
+		creat : creat,
+	}
+}
+
 </script>
 </head>
   
 <body>
-<div data-role="page">
-	<div data-role="header"  data-theme="c">
+<div data-role="page" class="wrap">
+	<div data-role="header"  data-theme="c" style="z-index:99;">
 		<div data-role="navbar" data-iconpos="top">
 			<ul>
-				<li><a href="#" class="ui-btn-active" style="font-size:3em "><i class="icon-th-list"></i>&nbsp;列表</a></li>
-				<li><a href="#" style="font-size:3em"><i class="icon-map-marker"></i>&nbsp;地图</a></li>
+				<li><a href="#" onclick="showList()" class="ui-btn-active" style="font-size:3em "><i class="icon-th-list"></i>&nbsp;列表</a></li>
+				<li><a href="#" onclick="showMap()" style="font-size:3em"><i class="icon-map-marker"></i>&nbsp;地图</a></li>
 			</ul>
 		</div>
 	</div>
 <!-- ListView -->
-	<div data-role="content" data-theme="c">
+	<div id="storeList-wrap" data-role="content" data-theme="c">
 		<ul id="storeList" data-role="listview" data-inset="true">
 
 		</ul>
 	</div>	
+	<div id="map-wrap" data-role="content">
+	</div>
 </div>
 
 

@@ -8,10 +8,11 @@
 <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
 <script src="http://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js"></script>
 <!-- jQuery Mobile end -->
-
+<!-- barcode start-->
+<script type="text/javascript" src="js/jquery-barcode.min.js"></script>
+<!-- barcode end -->
 <title>尚汤八珍面</title>	
 <meta content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
-<meta content="width=device-width" name="viewport">
 <!-- Mobile Devices Support @begin -->
 <meta content="telephone=no, address=no" name="format-detection">
 <meta name="apple-mobile-web-app-capable" content="yes"> <!-- apple devices fullscreen -->
@@ -39,6 +40,17 @@
 	.label + div{
 		width: 70%;
 	}
+  /*barcode style*/
+  #barcode-wrap {
+    width: 100%;
+    overflow: hidden;
+    display: none;
+  }
+
+  #barcode-show {
+    margin: 10px auto;
+    overflow: hidden;
+  }
 </style>
 
 <script type="text/javascript">
@@ -56,6 +68,12 @@ $(document).ready(function(){
 	</div>
 	<div class="content" data-role="content" data-theme="b">
     <!-- <form method="post" action="#" id="userInfoForm"> -->
+    <!-- barcode -->
+    <div id="barcode-wrap">
+        <h3 id="barcode-title"></h3>
+        <div id="barcode-show"></div>
+    </div>
+    <!-- end -->
     <form id="userInfoForm">
       <div data-role="fieldcontain">
         <label for="userName" class="label"><i style="color:red">*</i>姓名：</label>
@@ -65,24 +83,23 @@ $(document).ready(function(){
         <fieldset data-role="controlgroup" data-type="horizontal">
         <legend>性别：</legend>
           <label for="male">男</label>
-          <input type="radio" name="group" id="male" checked="checked" value="m">
+          <input type="radio" name="gender" id="male" value="m">
           <label for="female">女</label>
-          <input type="radio" name="group" id="female" value="f">	
+          <input type="radio" name="gender" id="female" value="f">	
         </fieldset>
         <br>
 
         <label for="userBirth" class="label"><i style="color:red">*</i>生日：</label>
-        <input type="date" name="userBirth" id="userBirth">
+        <input type="date" data-role="date" name="userBirth" id="userBirth">
 				<p>日期设置后不能修改</p>
-
-				<div style="display:none;">
-				    <label for="nameL" ><font color="red">*</font>身份证号</label>
-				    <div >
-				        <input type="text" id="idNum" placeholder="">
-				    </div>
-				    <label id="idMsg"></label>
-				</div>   
       </div>
+        <div style="display:none;">
+            <label for="nameL" ><font color="red">*</font>身份证号</label>
+            <div >
+                <input type="text" id="idNum" placeholder="">
+            </div>
+            <label id="idMsg"></label>
+        </div>   
       <input id="submit_btn" type="submit"  value="保存">
     </form>
     <p><i style="color:red">*</i>为必填项，输入后方可保存</p>
@@ -142,46 +159,58 @@ $(function (){
       }),
       success: function (data, status) {
       	
-          if (status != 'success') {
-              return;
-          }
-          
-          if (!data) {
-          	return;
-          }
-          //alert(JSON.stringify(data));
-          if (data.birthday && !data.name) {
-              delete data.birthday;
-          }
+        if (status != 'success') {
+            return;
+        }
+        
+        if (!data) {
+        	return;
+        }
+        //alert(JSON.stringify(data));
+        if (data.birthday && !data.name) {
+            delete data.birthday;
+        }
 
-          if (data.birthday) {
-              $('#userBirth').val(data.birthday);
-              // $("#userBirth").prop('disabled', true);
-              $('#userBirth').button("disable");
-          }
-          
-          if (data.name) {
-              $('#userName').val(data.name);
-          }            
-          
-          if (data.gender) {
-          	if (data.gender == "m") {
-          		$('#male').attr("checked", "checked");	
-          	} 
-          	else {
-          		$('#female').attr("checked", "checked");
-          	}
-          	
-          }
+        if (!data.birthday && !data.name && data.gender) {
+            delete data.gender;
+        }
+        // show phone number and barcode
+        if (data.phone) {
+          $('#barcode-title').text( "手机号码：" + data.phone);
+          $('#barcode-show').barcode( data.phone, "codabar",{barWidth:2, barHeight:90});
+          $('#barcode-wrap').show();
+        }
+
+        if (data.birthday) {
+            $('#userBirth').val(data.birthday);
+            //$('#userBirth').prop('type','text');
+            $("#userBirth").textinput( "disable" );
+        }
+        
+        if (data.name) {
+            $('#userName').val(data.name);
+        }            
+        
+        if (data.gender) {
+        	if (data.gender == "m") {
+        		$('#male').attr("checked", "checked");
+            $('#male').checkboxradio("refresh");
+              //$("input[type='radio']").attr("checked",true).checkboxradio("refresh");
+        	} 
+        	else {
+        		$('#female').attr("checked", "checked");
+            $('#female').checkboxradio("refresh");
+              //$("input[type='radio']").attr("checked",true).checkboxradio("refresh");
+        	}
+        	
+        }
 
           // if($.trim(data.name)!='' && data.birthday && data.gender){
           //     $('#submit_btn').removeAttr("disabled");
           // }
       }
-  }); 	
-	
-	$('#male').attr("checked", "checked");
-	
+  });
+
   $("#userName").on('input', function(e) {
       verifyAll();
   });  
@@ -226,7 +255,7 @@ $(function (){
   	var userName = $('#userName').val();
   	<%--var wechatNo = $('#wechatNo').val();--%>
   	var gender = $("#userInfoForm input:checked").val();
-  	if($.trim(userName)!='' && $.trim(userBirth)!='' && gender){
+  	if($.trim(userName)!='' && $.trim(userBirth)!=''){
           $.ajax({
               url: '<%=request.getContextPath()%>/pageService',
               type: 'post',

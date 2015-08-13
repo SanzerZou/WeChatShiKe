@@ -9,7 +9,7 @@
 <!-- font awesome icon-->
 <link rel="stylesheet" href="css/font-awesome.min.css">
 
-<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
 <script type="text/javascript" src="js/dmain.js" charset="UTF-8"></script>
 <script type="text/javascript" src="js/dialog.js" charset="UTF-8"></script>
 <title>点菜</title>	
@@ -234,8 +234,8 @@ function clickPop(){
 };
 
 function myOrder(){
-	// window.location.href="couponListInfo.jsp";
-	window.location.href="myOrder.jsp?openId="+ORDER.openId+'&brandUidStr='+ORDER.brandUid+'&branchUidStr='+ORDER.branchUid;
+	window.location.href="userInfo.jsp";
+	// window.location.href="myOrder.jsp?openId="+ORDER.openId+'&brandUidStr='+ORDER.brandUid+'&branchUidStr='+ORDER.branchUid;
 }
 
 </script>

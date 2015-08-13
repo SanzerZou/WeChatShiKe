@@ -28,6 +28,14 @@
 .ui-header .ui-btn-inner, .ui-footer .ui-btn-inner, .ui-mini .ui-btn-inner {
 	font-size: 16px;
 }
+
+.tips {
+	text-align: center;
+	color: #ccc;
+	margin-top: 40%;
+	margin-bottom: 40%;
+	overflow: hidden;
+}
 </style>
 
 <script type="text/javascript">
@@ -53,6 +61,10 @@ $(document).ready(function(){
 				'</a>'+
 			'</li>';
 		var s = [];
+		if ( data.length === 0 ) {
+			$('<p class="tips"><i class="icon-exclamation-sign"></i>&nbsp;没有已支付订单</p>').appendTo(wrap);
+			return;
+		}
 		for (var i = 0; i < data.length; i++) {
 			var tp = data[i];
 			var name = '';
@@ -175,10 +187,14 @@ function LoadLocal(){
 						'<p>{{name}}</p>'+
 						'<p class="ui-li-aside">{{transtime}}</p>'+
 					'</a>'+
-					'<a href = "#mdialog" data-rel="popup" onclick="openPopUp({{index}})" data-icon="false"><i class="icon-trash"></i></a>'+
+					'<a href = "#mdialog" data-rel="popup" onclick="openPopUp({{index}})" data-icon="false"><i class="icon-delete"></i></a>'+
 				'</li>';
 	var s = [];
 	var orders = local[ORDER.brandUid];
+	if ( orders.length === 0 ) {
+		$('<p class="tips"><i class="icon-exclamation-sign"></i>&nbsp;没有未支付订单</p>').appendTo(wrap);
+		return;
+	}
 	for (var id = orders.length - 1; id >= 0; id--) {
 		var tp = orders[id].orderItem;
 		var name = '';
@@ -212,7 +228,7 @@ var showLocal = function (b) {
 <body>
 <div data-role="page" id="nopay">
 	<!-- 导航栏 -->
-	<div data-role="header"  data-theme="c">
+	<div data-role="header"  data-theme="c" class="header">
 		<div data-role="navbar" data-iconpos="top">
 			<ul>
 				<li><a href="#" class="ui-btn-active" onclick="showLocal(true)"><i class="icon-shopping-cart"></i>&nbsp;未支付</a></li>
@@ -222,10 +238,10 @@ var showLocal = function (b) {
 	</div>
 	<!-- 内容 -->
 	<div data-role="content" data-theme="c">
-		<ul id="list-nopay" data-role="listview">
+		<ul id="list-nopay" class="j_list" data-role="listview">
 		</ul>
-		<ul id="list-ispay" data-role="listview" style="display:none">
-		</ul>                                               
+		<ul id="list-ispay" class="j_list" data-role="listview" style="display:none">
+		</ul>                                         
 	</div>
 	<!-- popup -->
 	<div  data-role="popup" data-theme="a" id="mdialog">		
