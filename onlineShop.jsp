@@ -64,8 +64,7 @@ var g_brandUidStr = 'bf754d76-26ac-11e5-8c51-55a12bf13948';
 
 $(document).ready(function(){
 	//店铺信息加载
-	var myMap = baiduMap();
-	myMap.creat();
+	baiduMap.creat();
 	$.ajax({
 	    url: g_baseurl+'/pageService',
 	    type: 'post',
@@ -81,21 +80,10 @@ $(document).ready(function(){
 	    	//{'resultCode':,'desc':,'branches':[{'brandUid':'',uid':'','name':'','address':'','tel':''}]}
 	    	var o = jQuery.parseJSON(d.data);
 	    	if(o.resultCode == 0){
-	    		var s = '';
-	    		for(var i = 0, length= o.branches.length; i < length; i++){
-	    			var dist = Math.round(Math.random()*1000);
-	    			var br = o.branches[i];
-	    			// onclick事件绑定； 设置brand Uid和uid这两个参数用于查找商家
-	    			s += 	'<li onclick="showMenu(this)" data-icon="false" uid="'+br.uid+'" buid="'+br.brandUid+'">'+
-												'<a href="#">'+
-													'<h2>'+br.name+'</h2>'+
-													'<p>'+br.address+'</p>'+
-													'<p class="ui-li-count"><span>'+dist+'</span>米</p>'+
-												'</a>'+
-											'</li>';
-	    		}
-	    		$('#storeList').append(s);
-	    		$('#storeList').listview('refresh')
+	    		// get and set the list data
+	    		shopList.setList ( o.branches );
+	    		// generate list view
+	    		shopList.generateList ();
 	    	} else {
 	    		alert(o.desc);
 	    	}
@@ -105,6 +93,83 @@ $(document).ready(function(){
 	    }
 	})
 });
+var shopList = ( function (){
+	//	private data
+	var list = [];
+	var generateList = function () {
+		// TODO: generateList
+		var s = '';
+		var i, length;
+		for(var i = 0, length= list.length; i < length; i++){
+			var dist = Math.round( Math.random()*1000 );
+			var br = list[i];
+			// onclick事件绑定； 设置brand Uid和uid这两个参数用于查找商家
+			s += '<li onclick="showMenu(this)" data-icon="false" uid="'+br.uid+'" buid="'+br.brandUid+'">'+
+					'<a href="#">'+
+						'<h2>'+br.name+'</h2>'+
+						'<p>'+br.address+'</p>'+
+						'<p class="ui-li-count"><span>'+dist+'</span>米</p>'+
+					'</a>'+
+				'</li>';
+		}
+		$('#storeList').append(s);
+		$('#storeList').listview('refresh')
+	};
+	var setList = function ( o ) {
+		// TODO: initial the list
+		list = o;
+	};
+	var addDistance = function () {
+		// TODO: add infomation distance to list
+		var start = baiduMap.getCoords();
+		var end = 0;
+		var distance = 0;
+		// forEach element add the distance
+		list.forEach ( item, index, array ) {
+			end.lat = item.lat;
+			end.lng = item.lng;
+			distance = getDistance ( source, end );
+			item.distance = distance;
+		}
+	};
+	// TODO: resort the list
+	var sortList = function () {
+		// addDistance first
+		addDistance();
+		var sortFunc = function (a, b) {
+			if (a.distance < b.distance) {
+				return -1;
+			}else if (a.distance > b.distance) {
+				return 1;
+			}else{
+				return 0;
+			};
+		}
+		// use distance to sort the list
+		list.sort( sortFunc );
+	};
+	// caculate the distance of two coord;
+    var getDistance = function ( coord1, coord2){
+		var Rad = function (d){
+	       return d * Math.PI / 180.0; //经纬度转换成三角函数中度分表形式。
+	    }
+        var radLat1 = Rad(coord1.lat);
+        var radLat2 = Rad(coord2.lat);
+        var a = radLat1 - radLat2;
+        var  b = Rad(coord1.lng) - Rad(coord2.lng);
+        var s = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a/2),2) +
+        Math.cos(radLat1)*Math.cos(radLat2)*Math.pow(Math.sin(b/2),2)));
+        s = s * 6378.137 ;// EARTH_RADIUS;
+        s = Math.round(s * 10000) / 10000; //return km
+        //s=s.toFixed(4);
+        return s;
+    };
+    // public interface
+    return {
+    	setList : setList,
+    	generateList : generateList
+    }
+}() );
 
 function showMenu(li){
 	var o = $(li);
@@ -125,21 +190,61 @@ var showMap = function () {
 	$("#map-wrap").show();
 }
 // baiduMap 构造函数
-var baiduMap = function () {
+var baiduMap = ( function () {
 	// private var
 	var map;
-	var point;   // 创建点坐标
-	// public function
-	// construct function
+	var coords;   // 创建点坐标
+	var isReliable = false; // 坐标是否可靠
+	// handle error
+	var getCoords = function () {
+		return coords;
+	}
+	var showError = function (error){
+	  	switch(error.code) {
+		    case error.PERMISSION_DENIED:
+				alert("User denied the request for Geolocation.");
+				break;
+		    case error.POSITION_UNAVAILABLE:
+				alert("Location information is unavailable.");
+				setTimeout( getCoordsFromUser, 5000 );
+		      break;
+		    case error.TIMEOUT:
+				alert("The request to get user location timed out.");
+				setTimeout( getCoordsFromUser, 5000 );	
+		      break;
+		    case error.UNKNOWN_ERROR:
+				alert("An unknown error occurred.");
+				setTimeout( getCoordsFromUser, 5000 );
+				break;
+	    }
+	}
+	// reset Center when get the current coords
+	var setCenterAndZoom = function () {
+		var point = new BMap.Point( coords.lng, coords.lat );
+		var scale = 15;
+		map.centerAndZoom( point, 15);
+		map.addControl( new BMap.ZoomControl() );
+	}
+	// get Current Coords
+	var getCoordsFromUser = function () {
+		coords = navigator.geolocation.getCurrentPosition( function( pos ){ 
+			return {
+				lat : pos.coords.latitude,
+				lng : pos.coords.longitude
+			};
+		}, showError ) || { lng : 116.404, lat: 39.915};
+		setCenterAndZoom();
+	}
 	var creat = function () {
 		map = new BMap.Map("map-wrap");            // 创建Map实例
-		point = new BMap.Point(116.404, 39.915);   // 创建点坐标
-		map.centerAndZoom(point,15);               // 初始化地图,设置中心点坐标和地图级别。
+		getCoordsFromUser();
+		setCenterAndZoom();
 	}
 	return {
 		creat : creat,
+		getCoords : getCoords
 	}
-}
+}() );
 
 </script>
 </head>
