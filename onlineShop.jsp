@@ -14,7 +14,11 @@
 <!-- jQuery Mobile end -->
 
 <!-- Baidu Map Api -->
-<script type="text/javascript" src="http://api.map.baidu.com/api?type=quick&ak=biZdDTipTS4pMbFWk2oiDG3X&v=1.0"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=1.5&ak=biZdDTipTS4pMbFWk2oiDG3X"></script>
+<!-- end -->
+
+<!-- weChat -->
+<script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
 <!-- end -->
 
 <title>食客来了</title>	
@@ -91,7 +95,47 @@ $(document).ready(function(){
 	    error: function(r, e, o){
 	        alert('发生内部错误，请联系公众号管理员');
 	    }
-	})
+	});
+	$.ajax({
+	        url: '<%=request.getContextPath()%>/pageService',
+	        type: 'post',
+	        async: true,
+	        dataType: 'json',
+	        data: JSON.stringify({
+	            service: "CreateJsApiTicketService",
+	            url: '<%=request.getRequestURL().append("?").append(request.getQueryString()).toString()%>'
+	        }),
+	        success: function (data, status) {
+	            if (status != 'success') {
+	                showError('主人，业务忙，正在稍后重试。。。');
+	                return;
+	            } 
+	            var debugEnabled = false;
+	            wx.config({
+	                debug: debugEnabled,
+	                appId: data.appId, 
+	                timestamp: data.timestamp, 
+	                nonceStr: data.nonceStr,
+	                signature: data.signature,
+	                jsApiList: ['checkJsApi', 'openLocation', 'getLocation']
+	            });
+	           	wx.ready(function(){    
+		           	wx.getLocation({
+		           	    success: function (o) {
+		           	        var coord = {lng : o.longitude, lat : o.latitude}
+		           	        baiduMap.setCoords(coord);
+		           	        baiduMap.setCenterAndZoom();
+		           	    },
+		           	    cancel: function (res) {
+		           	        alert('用户拒绝授权获取地理位置');
+		           	    }
+		           	});
+	           });
+	           wx.error(function(res){
+	               showError('业务忙，请重新打开页面');
+	           });
+	        }
+	    });
 });
 var shopList = ( function (){
 	//	private data
@@ -125,12 +169,12 @@ var shopList = ( function (){
 		var end = 0;
 		var distance = 0;
 		// forEach element add the distance
-		list.forEach ( item, index, array ) {
+		list.forEach ( function (item, index, array ) {
 			end.lat = item.lat;
 			end.lng = item.lng;
 			distance = getDistance ( source, end );
 			item.distance = distance;
-		}
+		});
 	};
 	// TODO: resort the list
 	var sortList = function () {
@@ -193,56 +237,83 @@ var showMap = function () {
 var baiduMap = ( function () {
 	// private var
 	var map;
-	var coords;   // 创建点坐标
+	var geolocation;
+	var coords = { lng : 116.404, lat: 39.915};   // 创建点坐标
 	var isReliable = false; // 坐标是否可靠
+	var timer;
 	// handle error
 	var getCoords = function () {
 		return coords;
 	}
-	var showError = function (error){
-	  	switch(error.code) {
-		    case error.PERMISSION_DENIED:
-				alert("User denied the request for Geolocation.");
-				break;
-		    case error.POSITION_UNAVAILABLE:
-				alert("Location information is unavailable.");
-				setTimeout( getCoordsFromUser, 5000 );
-		      break;
-		    case error.TIMEOUT:
-				alert("The request to get user location timed out.");
-				setTimeout( getCoordsFromUser, 5000 );	
-		      break;
-		    case error.UNKNOWN_ERROR:
-				alert("An unknown error occurred.");
-				setTimeout( getCoordsFromUser, 5000 );
-				break;
-	    }
+	var setCoords = function (coord) {
+		coords = coord;
 	}
 	// reset Center when get the current coords
 	var setCenterAndZoom = function () {
+		var mk = new BMap.Marker( coords );
 		var point = new BMap.Point( coords.lng, coords.lat );
-		var scale = 15;
-		map.centerAndZoom( point, 15);
-		map.addControl( new BMap.ZoomControl() );
+		var scale = 13;
+		map.centerAndZoom( point, scale);
+		map.addOverlay(mk);
+		mk.setAnimation(BMAP_ANIMATION_BOUNCE); 
 	}
 	// get Current Coords
-	var getCoordsFromUser = function () {
-		coords = navigator.geolocation.getCurrentPosition( function( pos ){ 
-			return {
-				lat : pos.coords.latitude,
-				lng : pos.coords.longitude
-			};
-		}, showError ) || { lng : 116.404, lat: 39.915};
+	var errorFunction = function (error){
+		alert("location false");
+		map.centerAndZoom( "南京", 11);
+		timer = setInterval( getCoordsFromUser, 5000 );
+	  	switch(error) {
+		    case BMAP_STATUS_UNKNOWN_LOCATION:
+				// alert("User denied the request for Geolocation.");
+				break;
+		    case BMAP_STATUS_PERMISSION_DENIED:
+				// alert("Location information is unavailable.");
+
+		      break;
+		    case BMAP_STATUS_SERVICE_UNAVAILABLE:
+				// alert("The request to get user location timed out.");
+		      break;
+		    case BMAP_STATUS_TIMEOUT:
+				// alert("An unknown error occurred.");
+				break;
+	    }
+	}
+
+	var successFunction = function (pos) {
+		clearInterval( timer );
+		var mk = new BMap.Marker(pos.point);
+		map.addOverlay(mk);
+		map.panTo(pos.point);
+		coords = {
+			lat : pos.point.lat,
+			lng : pos.point.lng
+		};
 		setCenterAndZoom();
 	}
+	var getCoordsFromUser = function () {
+		// navigator.geolocation.getCurrentPosition( successFunction, errorFunction );
+		geolocation.getCurrentPosition( function( pos ){
+			if( this.getStatus() == BMAP_STATUS_SUCCESS ){
+				successFunction( pos );
+			}
+			else {
+				errorFunction( this.getStatus() );
+			}        
+		},{enableHighAccuracy: true});
+	}
+	// initial
 	var creat = function () {
-		map = new BMap.Map("map-wrap");            // 创建Map实例
-		getCoordsFromUser();
-		setCenterAndZoom();
+		map = new BMap.Map("map-wrap"); // creatBaiduMap
+		geolocation = new BMap.Geolocation(); // creatGeolocation
+		// getCoordsFromUser();
+		map.addControl( new BMap.MapTypeControl() );
+		// map.setCurrentCity( "南京" );
 	}
 	return {
 		creat : creat,
-		getCoords : getCoords
+		getCoords : getCoords,
+		setCoords : setCoords,
+		setCenterAndZoom : setCenterAndZoom
 	}
 }() );
 
