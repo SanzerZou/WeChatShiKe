@@ -105,50 +105,34 @@ body {
 var openId = '<%=request.getParameter("openId")%>';
 
 $(function (){
-	$.ajax({
-	    url: '<%=request.getContextPath()%>/pageService',
-	    type: 'post',
-	    async: true,
-	    dataType: 'json',
-	    data: JSON.stringify({
-            service: "DynamicService",
-            scriptService:"couponList",
-	        openId: openId
-	    }),
-	    success: function (data, status) {
-	        if (status != 'success') {
-	        	$('#error').show();
-	            return;
-	        }
-            var o = jQuery.parseJSON(data.data);
-            //{'resultCode':,'errDesc':'','vouchers':[{'faceValue':,'validPeriod':'','status':,'vocherCode':''}]}
-            if(o.resultCode == 0){
-            	var arr = o.vouchers;
-            	if(arr.length == 0){
-            		$('#error').show();
-            		return;
-            	}
-		        var coupons = $('#coupons');
-		        var template = 	coupons.html();
-		        coupons.html("");
-		        var _html;
-	            for(i in arr) {
-	                var row = arr[i];
-	                _html = template.replace(/{{val}}/g, row.faceValue)
-	                				.replace(/{{period}}/g, row.validPeriod)
-	                				.replace(/{{code}}/g, row.vocherCode)
-	                				.replace(/{{index}}/g, i)
-	                				.replace(/{{status}}/g, row.status == 0 ? "none" : "block");
-	                coupons.append(_html);
-	                $("#barcode-" + i).barcode( row.vocherCode, "codabar",{barWidth:2, barHeight:90, showHRI:false, bgColor:"#fafafa"});
-	            }
-	            coupons.show();      	
-            } 
-            else {
-               	alert(o.desc);
-            }            	        
-	    }
-	});
+	var arr = [
+	{
+		faceValue: 4,
+		validPeriod: "2012-12-01",
+		voucherCode: "7915155145",
+		status: 0
+	},
+	{
+		faceValue: 10,
+		validPeriod: "2012-12-01",
+		voucherCode: "7915155145",
+		status: 1
+	}]
+    var coupons = $('#coupons');
+    var template = 	coupons.html();
+    coupons.html("");
+    var _html;
+    for(i in arr) {
+        var row = arr[i];
+        _html = template.replace(/{{val}}/g, row.faceValue)
+        				.replace(/{{period}}/g, row.validPeriod)
+        				.replace(/{{code}}/g, row.voucherCode)
+        				.replace(/{{index}}/g, i)
+        				.replace(/{{status}}/g, row.status == 0 ? "none" : "block");
+        coupons.append(_html);
+        $("#barcode-" + i).barcode( row.voucherCode, "codabar",{barWidth:2, barHeight:90, showHRI:false, bgColor:"#fafafa"});
+    }
+    coupons.show();  
 });
 </script>
 </body>

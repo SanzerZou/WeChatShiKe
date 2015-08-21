@@ -15,57 +15,49 @@
 <style type="text/css">
 body {
     font: normal 100%;
-    font-family: 宋体;    
-    text-indent: 5px;
+    font-family: 黑体;  
+    background-color: #EEEEEE;  
+    /*text-indent: 5px;*/
+}
+/*卡片样式*/
+.row {
+	padding-top: 10px;
+	padding-bottom: 10px;
+	margin-top: 5px;
+	box-shadow: 0px 1px 2px #9E9E9E;
+	background-color: #fafafa;
 }
 
-.container-fluid {
-    padding-left: 0;
-    padding-right: 0;
+.address h4,
+.address a{
+	font-weight: bold;
 }
-
-.panel-body {
-    padding-left: 1px;
-    padding-right: 1px;
+.address a {
+	color: #616161;
 }
 </style>
 </head>
 <body>
-
-<div class="panel panel-primary">
-    <div class="panel-heading">
-		<h3 class="panel-title">亲爱的客户，欢迎造访！享受不一般的品味！
-		</h3>
-    </div>
-    <div class="panel-body">
-        <div class="container-fluid">
-			<div id="branchError"></div>
-			<div id="branchTable" class="table-responsive">
-			    <table class="table table-condensed">
-			        <thead>
-			            <tr>
-                            <th>门店</th>
-                            <th>地址</th>
-                            <th>联系电话</th>			            
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                    </tbody>			    
-			    </table>
-			</div>
-	   </div>
+<div class="container-fluid" style="display: none" id="branchs">
+	<div class="row">
+		<div class="col-xs-4">
+			<img class="img-responsive img-rounded" src="<%=request.getContextPath()%>/3rd/image/{{img}}.jpg" alt="店铺图">
+		</div>
+		<div class="col-xs-8 address">
+			<address>
+				<h4>{{name}}</h4>
+				<p>{{address}}</p>
+				<h4>
+					<a href="tel:{{tel}}">
+						<span class="glyphicon glyphicon-earphone" aria-hidden="true"></span>&nbsp;{{tel}}
+					</a>
+				</h4>
+			</address>
+		</div>
 	</div>
 </div>
 <script src="<%=request.getContextPath()%>/3rd/jquery/jquery.min.js"></script>
-<%--  
-<script src="<%=request.getContextPath()%>/3rd/jquery/jquery-ui.min.js"></script>
---%>
-<%--
-<script src="<%=request.getContextPath()%>/3rd/bootstrap/js/bootstrap.min.js"></script>
---%>
 <script type="text/javascript">
-$('#branchTable').css('display', 'none');
-
 $(function (){
 	$.ajax({
 	    url: '<%=request.getContextPath()%>/pageService',
@@ -78,34 +70,30 @@ $(function (){
 	    success: function (data, status) {
 	        
 	        if (status != 'success') {
-	        	$('#branchError').css('display', 'block');
+	        	// $('#branchError').css('display', 'block');
 	            return;
 	        }
 
-            var tableData = data.rows;
-	        if (!tableData || tableData.length == 0) {
-	            $('#branchError').css('display', 'block');
+            var branchData = data.rows;
+	        if (!branchData || branchData.length == 0) {
+	            // $('#branchError').css('display', 'block');
 	        	return;
 	        }
-	        
-            $('#branchError').css('display', 'none');	        
-	        var tableBody = $('#tableBody'), tableRowLen = tableData.length, i = 0;
-            for(i in tableData) {
-                var tableRow = tableData[i];
-                if(tableRow.name.indexOf('测试')!=-1)continue;
-                var tr=$("<tr></tr>");
-                tr.appendTo(tableBody);
-                
-                var td=$("<td>"+ tableRow.name +"</td>");
-                td.appendTo(tr);
 
-                var td=$("<td>"+ tableRow.address +"</td>");
-                td.appendTo(tr);
-                
-                var td=$("<td>"+ tableRow.tel +"</td>");
-                td.appendTo(tr);
+	        var branchs = $('#branchs');
+	        var templete = branchs.html();
+	        var _html;
+	        var s = [];
+            for(i in branchData) {
+                var row = branchData[i];
+                if(row.name.indexOf('测试')!=-1) continue;
+                _html = templete.replace(/{{name}}/g, row.name)
+                				.replace(/{{address}}/g, row.address)
+                				.replace(/{{tel}}/g, row.tel)
+                				.replace(/{{img}}/g, row.name);
+                s.push(_html);
             }
-            $('#branchTable').css('display', 'block');
+           	branchs.html( s.join("") ).show();
 	    }
 	});     
 	
