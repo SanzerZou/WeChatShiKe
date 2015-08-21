@@ -21,8 +21,8 @@ body {
 }
 /*卡片样式*/
 .row {
-	padding-top: 10px;
-	padding-bottom: 10px;
+	padding-top: 2px;
+	padding-bottom: 2px;
 	margin-top: 5px;
 	box-shadow: 0px 1px 2px #9E9E9E;
 	background-color: #fafafa;
